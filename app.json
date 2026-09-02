@@ -1,25 +1,50 @@
 {
   "expo": {
-    "name": "_verse",
-    "slug": "_verse",
+    "name": "Calo Verse",
+    "slug": "calo-verse",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "scheme": "caloverse",
+    "icon": "./assets/caloverse-icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Calo Verse to photograph your food.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Calo Verse to choose a food photo.",
+          "microphonePermission": "Allow Calo Verse to record your spoken meal when you tap Record."
+        }
+      ],
+      ["expo-audio", { "microphonePermission": "Allow Calo Verse to record your spoken meal when you tap Record.", "recordAudioAndroid": true, "enableBackgroundRecording": false, "enableBackgroundPlayback": false }]
+    ],
+    "splash": {
+      "image": "./assets/caloverse-mark.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#202625"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.caloverse.app"
     },
     "android": {
+      "package": "com.caloverse.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
+        "backgroundColor": "#F4F8F3",
+        "foregroundImage": "./assets/caloverse-mark.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/caloverse-icon.png",
+      "name": "Calo Verse"
     }
   }
 }

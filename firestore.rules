@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validUserKeys() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'email',
+        'displayName',
+        'tier',
+        'profile',
+        'preferences',
+        'usage',
+        'trialStartedAt',
+        'schemaVersion',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validMealLog(logId) {
+      return request.resource.data.keys().hasOnly([
+          'id', 'food', 'loggedAt', 'mealType', 'note', 'updatedAt'
+        ])
+        && request.resource.data.id == logId
+        && request.resource.data.loggedAt is string;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && validUserKeys()
+        && request.resource.data.uid == userId
+        && request.resource.data.tier == 'free';
+      allow update: if isOwner(userId)
+        && validUserKeys()
+        && request.resource.data.uid == userId
+        && request.resource.data.tier == resource.data.tier
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+
+      match /mealLogs/{logId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && validMealLog(logId);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

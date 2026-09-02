@@ -1,12 +1,23 @@
 {
-  "name": "verse",
+  "name": "calo-verse",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.18",
+    "expo-audio": "~57.0.4",
+    "expo-camera": "~57.0.4",
+    "expo-file-system": "~57.0.6",
+    "expo-image-manipulator": "~57.0.15",
+    "expo-image-picker": "~57.0.15",
+    "expo-linear-gradient": "~57.0.1",
     "expo-status-bar": "~57.0.1",
+    "firebase": "^12.18.0",
     "react": "19.2.3",
-    "react-native": "0.86.3"
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
@@ -16,7 +27,12 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test:backend": "node --test tests/cloud-session.test.mjs",
+    "backend": "npm --prefix backend start",
+    "test:ai": "npm --prefix backend test",
+    "export:web": "expo export --platform web"
   },
   "private": true
 }

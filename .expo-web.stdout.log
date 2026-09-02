@@ -1,0 +1,20 @@
+
+> calo-verse@1.0.0 web
+> expo start --web --port 8081
+
+Starting project at C:\Users\H A M D A N\Desktop\calo\_verse
+Starting Metro Bundler
+
+Waiting on http://localhost:8081
+
+Logs for your project will appear below.
+| (node:6856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:6856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Web Bundled 2501ms index.ts (351 modules)
+Web  INFO  %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+Web  LOG  Running application "main" with appParams:
+ {"hydrate": undefined, "rootTag": "#root"} 
+Development-level warnings: ON.
+Performance optimizations: OFF.

@@ -1,0 +1,26 @@
+{
+  "name": "caloverse-ai-backend",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node --env-file=.env server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check:gemini": "node --env-file=.env check-gemini.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.3.0",
+    "music-metadata": "^11.15.0",
+    "sharp": "^0.35.4"
+  },
+  "overrides": {
+    "gaxios": {
+      "uuid": "^11.1.1"
+    },
+    "teeny-request": {
+      "uuid": "^11.1.1"
+    }
+  }
+}
