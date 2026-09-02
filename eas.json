@@ -12,6 +12,15 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyC30JRDGVtGq_eaVQMolNa6VxQ6_LLUt-I",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "caloverse.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "caloverse",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "caloverse.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "727919495971",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:727919495971:web:a1eb1f6368301be0d25a96",
+        "EXPO_PUBLIC_AI_API_URL": "https://caloverse-backend.onrender.com"
       }
     },
     "production": {
