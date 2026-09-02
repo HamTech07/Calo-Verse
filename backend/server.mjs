@@ -46,7 +46,8 @@ const server = createApiServer({
   estimate: (text, image, previousEstimate, audio) => estimateWithGemini(text, { image, previousEstimate, audio, apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite' }),
   origins: ['http://localhost:8081', 'http://127.0.0.1:8081'],
 });
-// Local only: deployment, HTTPS, distributed quotas and native-device access are separate work.
-server.listen(Number(process.env.PORT || 3001), '127.0.0.1', () => console.log('Calo Verse AI backend ready at http://127.0.0.1:' + (process.env.PORT || 3001)));
+const host = process.env.HOST || '0.0.0.0';
+const port = Number(process.env.PORT || 3001);
+server.listen(port, host, () => console.log(`Calo Verse AI backend ready at http://${host}:${port}`));
 server.on('error', () => { console.error('Backend could not start. Check whether its port is already occupied.'); process.exitCode = 1; });
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => server.close(() => { ledger.close(); process.exit(0); }));
