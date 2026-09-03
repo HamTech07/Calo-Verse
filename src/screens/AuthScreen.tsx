@@ -171,13 +171,11 @@ export function AuthScreen({ backendEnabled, onEmailAuth, onGoogleAuth, onContin
             </View>
           </ClayCard>
 
-          {!backendEnabled ? (
-            <SecondaryButton
-              label="Explore local preview"
-              icon="play-outline"
-              onPress={() => onContinue(name.trim() || 'Calo Explorer', email.trim() || 'preview@example.com')}
-            />
-          ) : null}
+          <SecondaryButton
+            label="Instant Guest / Demo Access"
+            icon="play-outline"
+            onPress={() => onContinue(name.trim() || 'Hamdan', email.trim() || 'hamdanamir2005@gmail.com')}
+          />
           <Text style={styles.demoNote}>
             {backendEnabled
               ? 'Account authentication powered by Firebase'

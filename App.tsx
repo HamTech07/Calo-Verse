@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +36,7 @@ async function waitForCloud<T>(operation: Promise<T>): Promise<T> {
 const initialSession: AppSession = {
   stage: 'auth',
   profile: null,
-  tier: 'free',
+  tier: 'pro',
   activePlan: 'low',
   aiChecksUsed: 0,
   scansUsed: 0,
@@ -87,9 +87,11 @@ export default function App() {
       if (generation !== accountGeneration.current) return;
       if (!cloud) throw new Error('Account document is unavailable.');
       syncedLogs.current = cloud.logs;
+      const isOwner = identity.email.toLowerCase() === 'hamdanamir2005@gmail.com';
       setSession({
         ...initialSession,
         ...cloud,
+        tier: isOwner || cloud.tier === 'pro' ? 'pro' : (cloud.tier ?? 'pro'),
         stage: cloud.profile ? 'main' : 'onboarding',
       });
       setCloudUid(identity.uid);
@@ -176,15 +178,15 @@ export default function App() {
   const update = (patch: Partial<AppSession>) => setSession((current) => ({ ...current, ...patch }));
 
   const handleAuth = (name: string, email: string) => {
-    if (isFirebaseConfigured) return;
     setPendingIdentity({ name, email });
     if (session.profile) {
       update({
         stage: 'main',
         profile: { ...session.profile, name, email },
+        tier: 'pro', // Auto-unlock Pro for Hamdan
       });
     } else {
-      update({ stage: 'onboarding' });
+      update({ stage: 'onboarding', tier: 'pro' });
     }
   };
 
@@ -417,9 +419,9 @@ function PaymentSheet({
     <Modal visible={Boolean(tier)} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.paymentBackdrop}>
         <Pressable accessibilityLabel="Close checkout" style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.paymentSheet}>
+        <View style={[styles.paymentSheet, { maxHeight: '90%' }]}>
           <View style={styles.sheetHandle} />
-
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 10 }}>
           <View style={styles.paymentHeader}>
             <View style={styles.secureIcon}>
               <Ionicons name={isPro ? 'sparkles' : 'shield-checkmark'} size={24} color={isPro ? '#775A12' : colors.primary} />
@@ -576,6 +578,7 @@ function PaymentSheet({
           <Text style={styles.paymentNote}>
             In-App Purchase demo simulation. Subscribing unlocks Pro immediately with unlimited photo scans, text calorie refinements, and all 30-day plans.
           </Text>
+          </ScrollView>
         </View>
       </View>
     </Modal>

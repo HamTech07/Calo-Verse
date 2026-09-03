@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -21,11 +21,11 @@ type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export function LogoMark({ size = 72 }: { size?: number }) {
   return (
-    <View style={[styles.logoOuter, clayShadow, { width: size, height: size, borderRadius: Math.max(16, size * 0.24) }]}> 
+    <View style={[styles.logoOuter, clayShadow, { width: size, height: size, borderRadius: Math.max(16, size * 0.24) }]}>
       <Image
         source={require('../../assets/caloverse-mark.png')}
         resizeMode="contain"
-        style={[styles.logoImage, { borderRadius: Math.max(14, size * 0.21) }]}
+        style={[styles.logoImage, { borderRadius: Math.max(16, size * 0.24) }]}
       />
     </View>
   );
@@ -212,11 +212,21 @@ export function FoodImage({
   style?: StyleProp<ImageStyle>;
   resizeMode?: 'cover' | 'contain';
 }) {
+  const [failed, setFailed] = useState(false);
+  const defaultMark = require('../../assets/caloverse-mark.png');
+  const isDefaultOrFailed = failed || !source;
+  const imgSource = isDefaultOrFailed ? defaultMark : typeof source === 'string' ? { uri: source } : source;
+
   return (
     <Image
-      source={!source ? require('../../assets/caloverse-mark.png') : typeof source === 'string' ? { uri: source } : source}
-      resizeMode={resizeMode}
-      style={[styles.foodImage, style]}
+      source={imgSource}
+      resizeMode={isDefaultOrFailed ? 'contain' : resizeMode}
+      onError={() => setFailed(true)}
+      style={[
+        styles.foodImage,
+        style,
+        isDefaultOrFailed && { backgroundColor: '#1C2322' },
+      ]}
     />
   );
 }
@@ -313,7 +323,7 @@ const styles = StyleSheet.create({
   screenTitleCopy: { flex: 1, gap: 4 },
   eyebrow: { ...typography.label, color: colors.primary, fontSize: 11, letterSpacing: 1.3 },
   subtitle: { ...typography.body, color: colors.muted, marginTop: 2 },
-  foodImage: { width: '100%', height: 140, backgroundColor: colors.surfaceSoft },
+  foodImage: { width: '100%', backgroundColor: colors.surfaceSoft },
   metric: { gap: 3 },
   metricLabel: { ...typography.label, color: colors.muted, fontSize: 11 },
   metricValue: { ...typography.heading, color: colors.ink, fontSize: 19 },

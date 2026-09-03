@@ -1031,7 +1031,7 @@ function FoodsTab({
       <ClayCard style={styles.aiAssistantCard}>
         <FoodImage source={foods[0].image} style={styles.aiAssistantImage} />
         <LinearGradient
-          colors={['rgba(15,45,39,0.75)', 'rgba(13,27,24,0.96)']}
+          colors={['rgba(15,45,39,0.35)', 'rgba(13,27,24,0.78)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.aiAssistantShade}
@@ -1443,7 +1443,20 @@ function PlansTab({
           placeholderTextColor="#8C9691"
           style={styles.promoInput}
         />
-        <Pressable onPress={() => setPromoMessage(promo.trim().toUpperCase() === 'VERSE20' ? '20% demo discount applied!' : 'Try VERSE20')} style={styles.applyButton}>
+        <Pressable
+          onPress={() => {
+            const clean = promo.trim().toUpperCase();
+            if (clean === '1519') {
+              onTierChange('pro');
+              setPromoMessage('🎉 Promo 1519 applied! 100% Pro unlocked.');
+            } else if (clean === 'VERSE20') {
+              setPromoMessage('20% demo discount applied!');
+            } else {
+              setPromoMessage('Use code 1519 for free Pro!');
+            }
+          }}
+          style={styles.applyButton}
+        >
           <Text style={styles.applyText}>Apply</Text>
         </Pressable>
       </ClayCard>
@@ -1674,8 +1687,9 @@ function UpgradeModal({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <Pressable accessibilityLabel="Close upgrade modal" style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.modalSheet, { gap: 14 }]}>
+        <View style={[styles.modalSheet, { maxHeight: '90%', paddingBottom: 10 }]}>
           <View style={styles.modalHandle} />
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 24 }}>
 
           {/* Header */}
           <View style={styles.modalHeading}>
@@ -1838,6 +1852,7 @@ function UpgradeModal({
             </Pressable>
             <Text style={styles.modalDemoNote}>Demo only · No real payment</Text>
           </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -2118,8 +2133,8 @@ const styles = StyleSheet.create({
   proBadge: { backgroundColor: colors.goldSoft },
   tierBadgeText: { ...typography.label, fontSize: 10, color: colors.primary },
   viewport: { flex: 1 },
-  screenScroll: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 22, paddingBottom: 118, gap: 18 },
-  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 20 : 10, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
+  screenScroll: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 22, paddingBottom: 160, gap: 18 },
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : 42, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
   navInner: { width: '100%', maxWidth: 760, alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-around' },
   navItem: { minWidth: 60, alignItems: 'center', gap: 3 },
   navIconWrap: { width: 43, height: 37, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
@@ -2303,18 +2318,18 @@ const styles = StyleSheet.create({
   dayDate: { ...typography.body, color: colors.muted, fontSize: 10 },
   dayCalories: { ...typography.heading, color: colors.primaryDark, fontSize: 16, marginTop: 3 },
   dayAllowance: { ...typography.body, color: colors.muted, fontSize: 9, lineHeight: 13 },
-  planOptionCard: { padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 },
-  planArt: { width: 100, height: 108, borderRadius: 24, overflow: 'hidden', position: 'relative' },
+  planOptionCard: { padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  planArt: { width: 84, height: 96, borderRadius: 20, overflow: 'hidden', position: 'relative' },
   planArtImage: { width: '100%', height: '100%' },
-  planArtContent: { position: 'absolute', left: 10, right: 10, bottom: 10, gap: 1 },
-  planArtTime: { ...typography.heading, fontSize: 18, color: '#FFFFFF' },
-  planOptionCopy: { flex: 1, gap: 3 },
-  planLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  planArtContent: { position: 'absolute', left: 8, right: 8, bottom: 8, gap: 1 },
+  planArtTime: { ...typography.heading, fontSize: 16, color: '#FFFFFF' },
+  planOptionCopy: { flex: 1, minWidth: 0, gap: 3 },
+  planLabelRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 },
   popularBadge: { borderRadius: 9, paddingHorizontal: 6, paddingVertical: 2 },
   popularText: { ...typography.label, fontSize: 8 },
-  planOptionTitle: { ...typography.heading, fontSize: 18 },
+  planOptionTitle: { ...typography.heading, fontSize: 16, flexShrink: 1 },
   planOptionSchedule: { ...typography.label, fontSize: 11 },
-  planOptionDetail: { ...typography.body, color: colors.muted, fontSize: 12, lineHeight: 17 },
+  planOptionDetail: { ...typography.body, color: colors.muted, fontSize: 12, lineHeight: 16 },
   safetyNote: { backgroundColor: colors.goldSoft, borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 9 },
   safetyText: { ...typography.body, color: '#725627', fontSize: 12, lineHeight: 18, flex: 1 },
   mealAiCard: { overflow: 'hidden' },

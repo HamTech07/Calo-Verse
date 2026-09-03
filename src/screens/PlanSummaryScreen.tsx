@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ClayCard, FoodImage, Metric, PrimaryButton, ProgressBar } from '../components/ui';
@@ -30,7 +30,13 @@ export function PlanSummaryScreen({
 
   return (
     <LinearGradient colors={['#F8FAF7', '#EDF7F1', '#FAF4E6']} style={styles.page}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        bounces={true}
+        alwaysBounceVertical={true}
+      >
         <View style={styles.successMark}>
           <Ionicons name="checkmark" size={28} color={colors.surface} />
         </View>
@@ -138,8 +144,10 @@ export function PlanSummaryScreen({
           This demo provides general wellness estimates, not medical advice. Adjust with a qualified professional when needed.
         </Text>
 
-        <PrimaryButton label="Enter my dashboard" icon="arrow-forward" onPress={onContinue} />
       </ScrollView>
+      <View style={styles.floatingFooter}>
+        <PrimaryButton label="Enter my dashboard" icon="arrow-forward" onPress={onContinue} />
+      </View>
     </LinearGradient>
   );
 }
@@ -151,9 +159,9 @@ const styles = StyleSheet.create({
     maxWidth: 640,
     alignSelf: 'center',
     paddingHorizontal: 20,
-    paddingTop: 54,
-    paddingBottom: 38,
-    gap: 20,
+    paddingTop: 48,
+    paddingBottom: 80,
+    gap: 16,
   },
   successMark: {
     width: 54,
@@ -192,9 +200,9 @@ const styles = StyleSheet.create({
   monthlyText: { ...typography.label, color: colors.primaryDark },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   exploreHint: { color: '#FFFFFF', fontSize: 11, opacity: 0.85 },
-  metricCard: { width: '48%', minWidth: 150, minHeight: 178, padding: 0, flexGrow: 1, position: 'relative' },
-  metricBackground: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
-  metricCardContent: { flex: 1, justifyContent: 'flex-end', padding: 17, gap: 12 },
+  metricCard: { width: '47%', minWidth: 140, height: 140, maxHeight: 140, borderRadius: 24, overflow: 'hidden', padding: 0, position: 'relative' },
+  metricBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
+  metricCardContent: { flex: 1, height: '100%', justifyContent: 'flex-end', padding: 14, gap: 8 },
   metricIcon: { width: 38, height: 38, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   planCard: { padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 },
   planAccent: { width: 52, height: 52, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
@@ -213,5 +221,17 @@ const styles = StyleSheet.create({
   projectionCopy: { flex: 1, gap: 3 },
   projectionTitle: { ...typography.heading, fontSize: 16, color: '#5F4B16' },
   projectionDetail: { ...typography.body, color: '#765F25', fontSize: 12 },
-  disclaimer: { ...typography.body, color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  disclaimer: { ...typography.body, color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: 'center', marginBottom: 20 },
+  floatingFooter: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 48,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(214,223,217,0.8)',
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
+    ...softShadow,
+  },
 });
