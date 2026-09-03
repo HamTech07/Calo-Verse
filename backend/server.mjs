@@ -36,7 +36,7 @@ async function authenticate(token) {
     uid: identity.uid,
     email,
     isAdmin,
-    tier: ['plus', 'pro'].includes(rawTier) ? rawTier : 'free',
+    tier: isAdmin ? 'pro' : (['plus', 'pro'].includes(rawTier) ? rawTier : 'free'),
     used: Number.isFinite(rawUsed) ? rawUsed : 0
   };
 }
