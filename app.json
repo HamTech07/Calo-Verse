@@ -60,6 +60,18 @@
           "action": "VIEW",
           "data": [
             {
+              "scheme": "com.googleusercontent.apps.727919495971-0a2ov31svt3kpmvek3hj3rnush0bc2ck"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
               "scheme": "com.googleusercontent.apps.727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps"
             }
           ],

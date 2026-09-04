@@ -37,9 +37,11 @@ if (firebaseApp) {
 
 export const firebaseAuth = nativeAuth;
 
-// Web Client ID from google-services.json (client_type: 3)
-const WEB_CLIENT_ID =
-  '727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps.apps.googleusercontent.com';
+// Android Client ID from google-services.json (client_type: 1)
+// Web Client IDs do NOT support custom-scheme redirect URIs on Android,
+// causing "Access blocked" errors. The Android Client ID is required.
+const ANDROID_CLIENT_ID =
+  '727919495971-0a2ov31svt3kpmvek3hj3rnush0bc2ck.apps.googleusercontent.com';
 
 const discovery = {
   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
@@ -58,11 +60,11 @@ export function signInWithGoogleClient(): Promise<UserCredential> {
       // Format: com.googleusercontent.apps.{number}:/oauth2redirect
       // This requires NO changes in Google Cloud Console.
       const REVERSE_CLIENT_ID =
-        'com.googleusercontent.apps.727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps';
+        'com.googleusercontent.apps.727919495971-0a2ov31svt3kpmvek3hj3rnush0bc2ck';
       const redirectUri = `${REVERSE_CLIENT_ID}:/oauth2redirect`;
 
       const request = new AuthSession.AuthRequest({
-        clientId: WEB_CLIENT_ID,
+        clientId: ANDROID_CLIENT_ID,
         scopes: ['openid', 'profile', 'email'],
         redirectUri,
         responseType: AuthSession.ResponseType.IdToken,
