@@ -46,7 +46,7 @@
       "package": "com.caloverse.app",
       "adaptiveIcon": {
         "backgroundColor": "#1E2322",
-        "foregroundImage": "./assets/caloverse-mark.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -54,6 +54,20 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "com.googleusercontent.apps.727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "web": {

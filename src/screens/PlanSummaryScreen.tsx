@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   floatingFooter: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 32 : 48,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 28,
     backgroundColor: 'rgba(255,255,255,0.95)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(214,223,217,0.8)',

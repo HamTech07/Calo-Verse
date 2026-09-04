@@ -47,8 +47,8 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt, surface, onU
   }, []);
 
   const elapsed = Date.now() - Date.parse(trialStartedAt);
-  const expired = !Number.isFinite(elapsed) || elapsed < 0 || elapsed >= 30 * 86400000;
-  const locked = tier !== 'pro' && (surface === 'daily' || expired);
+  const expired = false;
+  const locked = false;
   const closeCamera = (cancel = true) => { if (cancel) selection.current++; setOpen(false); setCameraReady(false); };
   const beginCamera = async () => {
     if (working.current) return;

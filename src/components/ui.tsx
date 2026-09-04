@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   screenTitleCopy: { flex: 1, gap: 4 },
   eyebrow: { ...typography.label, color: colors.primary, fontSize: 11, letterSpacing: 1.3 },
   subtitle: { ...typography.body, color: colors.muted, marginTop: 2 },
-  foodImage: { width: '100%', backgroundColor: colors.surfaceSoft },
+  foodImage: { width: '100%', height: '100%', backgroundColor: colors.surfaceSoft },
   metric: { gap: 3 },
   metricLabel: { ...typography.label, color: colors.muted, fontSize: 11 },
   metricValue: { ...typography.heading, color: colors.ink, fontSize: 19 },
