@@ -19,6 +19,14 @@
         }
       },
       {
+        "client_id": "727919495971-st1qpmbcsn39viopd84clfl1dq5cptf1.apps.googleusercontent.com",
+        "client_type": 1,
+        "android_info": {
+          "package_name": "com.caloverse.app",
+          "certificate_hash": "6ef1f2a0e5c892002a15c7b9cad0dc2276f929bd"
+        }
+      },
+      {
         "client_id": "727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps.apps.googleusercontent.com",
         "client_type": 3
       }
