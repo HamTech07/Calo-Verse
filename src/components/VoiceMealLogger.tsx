@@ -78,6 +78,7 @@ function VoiceRecorder({ tier, voiceChecksUsed, onAddFood, onVoiceUsage }: Props
       <TextInput accessibilityLabel="English voice translation" value={translation} onChangeText={setTranslation} multiline maxLength={2000} editable={!busy && !saved} style={styles.input} />
       {stale ? <><Text style={styles.notice}>Text changed. Update the estimate before saving.</Text><PrimaryButton label="Re-estimate corrected text" onPress={() => { void send(true); }} disabled={saved} loading={busy} /></> : null}
       <Text style={styles.title}>{estimate.name} · {estimate.calories} kcal</Text>
+      <Text style={styles.label}>Likely range: {estimate.caloriesLow}–{estimate.caloriesHigh} kcal · conservative value will be logged</Text>
       <Text style={styles.body}>{estimate.portion} · {estimate.confidence} confidence</Text>
       <Text style={styles.body}>Protein {estimate.protein} g · Carbs {estimate.carbs} g · Fat {estimate.fats} g · Fiber {estimate.fiber} g</Text>
       <Text style={styles.body}>{estimate.explanation}</Text>

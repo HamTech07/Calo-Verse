@@ -11,6 +11,7 @@ export class NutritionAiError extends Error {
 export interface LiveEstimate {
   name: string; englishText: string; portion: string; explanation: string;
   calories: number; protein: number; carbs: number; fats: number; fiber: number;
+  caloriesLow: number; caloriesHigh: number;
   confidence: 'low' | 'medium' | 'high'; source: 'gemini';
 }
 
@@ -45,9 +46,10 @@ async function requestEstimate(text: string, image?: FoodPhoto, surface?: 'daily
     if (!response.ok) throw new NutritionAiError(result.error || 'AI is unavailable. Please try again.', result.code || 'AI_UNAVAILABLE');
     const usage = image ? result.scansUsed : audio ? result.voiceChecksUsed : result.aiChecksUsed;
     if (!result.estimate || result.estimate.source !== 'gemini' || typeof result.estimate.name !== 'string' || !Number.isFinite(usage)) throw new NutritionAiError('AI returned an incomplete estimate.', 'INVALID_AI_RESPONSE');
-    for (const key of ['calories', 'protein', 'carbs', 'fats', 'fiber']) {
+    for (const key of ['calories', 'caloriesLow', 'caloriesHigh', 'protein', 'carbs', 'fats', 'fiber']) {
       if (!Number.isFinite(result.estimate[key]) || result.estimate[key] < 0) throw new NutritionAiError('AI returned invalid nutrients.', 'INVALID_AI_RESPONSE');
     }
+    if (result.estimate.caloriesLow > result.estimate.calories || result.estimate.caloriesHigh < result.estimate.calories) throw new NutritionAiError('AI returned an invalid calorie range.', 'INVALID_AI_RESPONSE');
     return result;
   } catch (error) {
     if (error instanceof NutritionAiError) throw error;

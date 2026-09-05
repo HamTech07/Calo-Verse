@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, unlinkSync, rmdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { ApiError, estimateWithGemini, validateEstimate } from '../gemini.mjs';
+import { ApiError, applyKnownFoodGuard, estimateWithGemini, validateEstimate } from '../gemini.mjs';
 import { QuotaLedger } from '../quota.mjs';
 import { createApiServer } from '../http.mjs';
 
@@ -17,6 +17,22 @@ test('only validated nutrition is returned; extra model fields are stripped', ()
 });
 test('invalid, negative or unrelated responses cannot become calorie logs', () => {
   for (const value of [{}, { ...meal, calories: -1 }, { ...meal, protein: '6' }, { ...meal, calories: Infinity }, { ...meal, isFood: false }, { ...meal, needsClarification: true }]) assert.throws(() => validateEstimate(value), ApiError);
+});
+test('Mighty Zinger cannot collapse to a regular Zinger estimate', () => {
+  const burger = applyKnownFoodGuard(validateEstimate({ ...meal, englishText: 'KFC Mighty Zinger', name: 'KFC Mighty Zinger', calories: 650, protein: 31, carbs: 55, fats: 32 }), 'KFC Mighty Zinger');
+  assert.equal(burger.calories, 1000);
+  assert.match(burger.portion, /900–1,150/);
+  assert.equal(burger.confidence, 'low');
+  const combo = applyKnownFoodGuard(validateEstimate({ ...meal, englishText: 'KFC Mighty Zinger combo with fries and Pepsi', name: 'KFC Mighty Zinger meal', calories: 900 }), '');
+  assert.equal(combo.calories, 1350);
+  assert.match(combo.portion, /1,200–1,550/);
+});
+test('low-confidence estimates log near the upper range and macro energy prevents undercounts', () => {
+  const uncertain = validateEstimate({ ...meal, confidence: 'low', calories: 500, caloriesLow: 800, caloriesHigh: 1100, protein: 50, carbs: 70, fats: 65 });
+  assert.equal(uncertain.calories, 1025);
+  assert.equal(uncertain.caloriesLow, 800);
+  assert.equal(uncertain.caloriesHigh, 1100);
+  assert.throws(() => validateEstimate({ ...meal, confidence: 'low', calories: 700, caloriesLow: 300, caloriesHigh: 1200 }), error => error.code === 'MORE_DETAIL_NEEDED');
 });
 test('provider request keeps key in headers and food in user data, not system instructions', async () => {
   const result = await estimateWithGemini('One egg', { apiKey: 'private-test-key', fetchImpl: async (url, options) => {

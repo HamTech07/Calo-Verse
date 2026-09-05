@@ -163,6 +163,7 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt: _trialStarte
         {estimate ? <View style={styles.result}>
           <Text style={styles.title}>{estimate.name}</Text>
           <Text style={styles.calories}>{estimate.calories} kcal</Text>
+          <Text style={styles.label}>Likely range: {estimate.caloriesLow}–{estimate.caloriesHigh} kcal · conservative value will be logged</Text>
           <Text style={styles.body}>{estimate.portion} · {estimate.confidence} confidence</Text>
           {previousCalories !== null ? <Text style={styles.label}>{estimate.calories - previousCalories >= 0 ? '+' : ''}{Math.round((estimate.calories - previousCalories) * 10) / 10} kcal compared with the previous estimate</Text> : null}
           <Text style={styles.body}>{estimate.explanation}</Text>

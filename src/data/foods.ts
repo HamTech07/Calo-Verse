@@ -256,6 +256,13 @@ export const foods: Food[] = [
     accessTier: 'plus',
     keywords: ['kfc', 'zinger', 'zinger burger', 'crispy burger'],
   }),
+  food('brand_113', 'KFC Mighty Zinger', 'South Asian', 1000, '1 double-fillet burger (estimated 900–1,150 kcal)', 50, 64, 56, 2, {
+    brand: 'KFC',
+    isBranded: true,
+    processingLevel: 'Ultra-Processed',
+    accessTier: 'plus',
+    keywords: ['kfc mighty zinger', 'mighty zinger', 'double zinger', 'double fillet burger'],
+  }),
   food('brand_205', "McDonald's Big Mac", 'American & Latin', 590, '1 burger', 25, 46, 34, 3, {
     brand: "McDonald's",
     isBranded: true,

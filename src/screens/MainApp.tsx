@@ -980,7 +980,7 @@ function FoodsTab({
     onAiUsage(used);
     setAssistantReply({
       headline: `About ${estimate.calories} kcal · ${estimate.name}`,
-      detail: `${estimate.portion}. Protein ${estimate.protein} g · Carbs ${estimate.carbs} g · Fats ${estimate.fats} g · Fiber ${estimate.fiber} g. ${estimate.explanation}`,
+      detail: `Likely range ${estimate.caloriesLow}–${estimate.caloriesHigh} kcal; ${estimate.calories} kcal is the conservative logging value. ${estimate.portion}. Protein ${estimate.protein} g · Carbs ${estimate.carbs} g · Fats ${estimate.fats} g · Fiber ${estimate.fiber} g. ${estimate.explanation}`,
     });
     setNotice(`Live AI estimate · ${estimate.englishText}`);
     } catch (error) {
