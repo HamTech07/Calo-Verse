@@ -929,6 +929,7 @@ function FoodsTab({
   const [region, setRegion] = useState('All');
   const [notice, setNotice] = useState('Browse freely with Unlimited manual search, or Ask Calo AI.');
   const [assistantReply, setAssistantReply] = useState<{ headline: string; detail: string } | null>(null);
+  const [aiResultOpen, setAiResultOpen] = useState(false);
   const aiBusy = useRef(false);
   const [askingAi, setAskingAi] = useState(false);
 
@@ -973,6 +974,7 @@ function FoodsTab({
     aiBusy.current = true;
     setAskingAi(true);
     setAssistantReply(null);
+    setAiResultOpen(false);
     setNotice('Asking Gemini for a nutrition estimate…');
     try {
     setActiveQuery('');
@@ -982,6 +984,7 @@ function FoodsTab({
       headline: `About ${estimate.calories} kcal · ${estimate.name}`,
       detail: `Likely range ${estimate.caloriesLow}–${estimate.caloriesHigh} kcal; ${estimate.calories} kcal is the conservative logging value. ${estimate.portion}. Protein ${estimate.protein} g · Carbs ${estimate.carbs} g · Fats ${estimate.fats} g · Fiber ${estimate.fiber} g. ${estimate.explanation}`,
     });
+    setAiResultOpen(true);
     setNotice(`Live AI estimate · ${estimate.englishText}`);
     } catch (error) {
       if (error instanceof NutritionAiError && error.code === 'FREE_LIMIT') onUpgrade(error.message);
@@ -1056,6 +1059,26 @@ function FoodsTab({
           <Text style={styles.aiAssistantDisclaimer}>Live Gemini estimates, not exact measurements. Food descriptions are sent to Google; free-tier inputs may be used to improve its products. Do not include sensitive personal information.</Text>
         </View>
       </ClayCard>
+
+      <Modal transparent visible={aiResultOpen} animationType="fade" onRequestClose={() => setAiResultOpen(false)}>
+        <View style={styles.aiResultOverlay}>
+          <ClayCard style={styles.aiResultModal}>
+            <View style={styles.aiResultHeader}>
+              <View style={styles.aiResultIcon}><Ionicons name="sparkles" size={19} color="#765B15" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.aiResultEyebrow}>CALO AI ESTIMATE</Text>
+                <Text style={styles.aiResultTitle}>Your food estimate</Text>
+              </View>
+              <Pressable onPress={() => setAiResultOpen(false)} accessibilityLabel="Close AI estimate" style={styles.aiResultClose}>
+                <Ionicons name="close" size={20} color={colors.primaryDark} />
+              </Pressable>
+            </View>
+            <Text style={styles.aiResultCalories}>{assistantReply?.headline}</Text>
+            <Text style={styles.aiResultDetail}>{assistantReply?.detail}</Text>
+            <PrimaryButton label="Done" icon="checkmark" onPress={() => setAiResultOpen(false)} />
+          </ClayCard>
+        </View>
+      </Modal>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
         {regions.map((item) => (
@@ -2223,7 +2246,7 @@ const styles = StyleSheet.create({
   notice: { ...typography.body, color: colors.muted, fontSize: 11, flex: 1 },
   searchCount: { ...typography.label, color: '#9A5C37', fontSize: 11 },
   unlimited: { ...typography.label, color: colors.primary, fontSize: 11 },
-  aiAssistantCard: { minHeight: 260, overflow: 'hidden', position: 'relative', justifyContent: 'center' },
+  aiAssistantCard: { minHeight: 238, overflow: 'hidden', position: 'relative', justifyContent: 'center' },
   aiAssistantImage: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
   aiAssistantShade: { ...StyleSheet.absoluteFillObject, zIndex: 1 },
   aiAssistantContent: { padding: 21, gap: 8, position: 'relative', zIndex: 2, elevation: 2 },
@@ -2236,6 +2259,15 @@ const styles = StyleSheet.create({
   aiAskButtonText: { ...typography.label, color: colors.primaryDark, fontSize: 11 },
   aiAskCount: { ...typography.label, color: '#765B1D', fontSize: 9, borderLeftWidth: 1, borderLeftColor: 'rgba(90,67,12,0.24)', paddingLeft: 8 },
   aiAssistantDisclaimer: { ...typography.label, color: 'rgba(255,255,255,0.55)', fontSize: 9, marginTop: 3 },
+  aiResultOverlay: { flex: 1, padding: 24, backgroundColor: 'rgba(7,22,18,0.52)', alignItems: 'center', justifyContent: 'center' },
+  aiResultModal: { width: '100%', maxWidth: 440, padding: 21, gap: 14, backgroundColor: '#FFFEFA' },
+  aiResultHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  aiResultIcon: { width: 38, height: 38, borderRadius: 15, backgroundColor: colors.goldSoft, alignItems: 'center', justifyContent: 'center' },
+  aiResultEyebrow: { ...typography.label, color: '#765B15', fontSize: 9, letterSpacing: 1 },
+  aiResultTitle: { ...typography.heading, color: colors.primaryDark, fontSize: 18 },
+  aiResultClose: { width: 36, height: 36, borderRadius: 14, backgroundColor: colors.surfaceMint, alignItems: 'center', justifyContent: 'center' },
+  aiResultCalories: { ...typography.heading, color: colors.primaryDark, fontSize: 20, lineHeight: 27 },
+  aiResultDetail: { ...typography.body, color: colors.muted, fontSize: 13, lineHeight: 20 },
   chipRow: { gap: 8, paddingVertical: 2, paddingRight: 18 },
   resultHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   resultActions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 7 },
