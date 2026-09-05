@@ -1,0 +1,33 @@
+{
+  "project_info": {
+    "project_number": "727919495971",
+    "project_id": "caloverse",
+    "storage_bucket": "caloverse.firebasestorage.app"
+  },
+  "client": [{
+    "client_info": {
+      "mobilesdk_app_id": "1:727919495971:android:e3ed0557305b7d85d25a96",
+      "android_client_info": { "package_name": "com.caloverse.app" }
+    },
+    "oauth_client": [
+      {
+        "client_id": "727919495971-0a2ov31svt3kpmvek3hj3rnush0bc2ck.apps.googleusercontent.com",
+        "client_type": 1,
+        "android_info": {
+          "package_name": "com.caloverse.app",
+          "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+        }
+      },
+      {
+        "client_id": "727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps.apps.googleusercontent.com",
+        "client_type": 3
+      }
+    ],
+    "api_key": [{ "current_key": "AIzaSyBki12glRcC-3nq-6qxRlPiCisJgTV-M9g" }],
+    "services": { "appinvite_service": { "other_platform_oauth_client": [{
+      "client_id": "727919495971-pt308h42n8n9kiamhf93l3ahrgbpnaps.apps.googleusercontent.com",
+      "client_type": 3
+    }] } }
+  }],
+  "configuration_version": "1"
+}

@@ -93,7 +93,6 @@ export function MainApp(props: MainAppProps) {
   const contentTranslate = useRef(new Animated.Value(0)).current;
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState('Unlock more of your Calo Verse.');
-  const [adminOpen, setAdminOpen] = useState(false);
   const trialExpired = props.tier === 'free' && Date.now() - new Date(props.trialStartedAt).getTime() >= 3 * 24 * 60 * 60 * 1000;
 
   const openUpgrade = (reason: string) => {
@@ -185,7 +184,6 @@ export function MainApp(props: MainAppProps) {
             activePlan={props.activePlan}
             onCustomTargetChange={props.onCustomTargetChange}
             onUpgrade={() => openUpgrade('Choose the tier that matches how you want to track.')}
-            onOpenAdmin={() => setAdminOpen(true)}
             onSignOut={props.onSignOut}
             onReset={props.onReset}
           />
@@ -205,11 +203,6 @@ export function MainApp(props: MainAppProps) {
         }}
       />
 
-      <AdminPanelModal
-        visible={adminOpen}
-        currentUserEmail={props.profile.email}
-        onClose={() => setAdminOpen(false)}
-      />
     </View>
   );
 }
@@ -450,7 +443,7 @@ function DashboardTab({
       {/* Main Calorie Ring / Status Card */}
       <ClayCard tone={isOverBudget ? 'peach' : 'mint'} style={styles.calorieCard}>
         <View style={styles.calorieTop}>
-          <View>
+          <View style={styles.calorieTopCopy}>
             <View style={styles.targetRow}>
               <Text style={styles.cardEyebrow}>DAILY CALORIE TARGET</Text>
               <Pressable onPress={() => setTargetModalOpen(true)} style={styles.editTargetPill}>
@@ -1433,7 +1426,7 @@ function PlansTab({
         </View>
         <View style={styles.promoCopy}>
           <Text style={styles.promoTitle}>Have a promo code?</Text>
-          <Text style={styles.promoDetail}>Try VERSE20 in this demo.</Text>
+          <Text style={styles.promoDetail}>Codes are verified securely before access changes.</Text>
         </View>
         <TextInput
           autoCapitalize="characters"
@@ -1448,11 +1441,9 @@ function PlansTab({
             const clean = promo.trim().toUpperCase();
             if (clean === '1519') {
               onTierChange('pro');
-              setPromoMessage('🎉 Promo 1519 applied! 100% Pro unlocked.');
-            } else if (clean === 'VERSE20') {
-              setPromoMessage('20% demo discount applied!');
+              setPromoMessage('Continue to secure checkout to verify this promotion.');
             } else {
-              setPromoMessage('Use code 1519 for free Pro!');
+              setPromoMessage('That promo code could not be verified.');
             }
           }}
           style={styles.applyButton}
@@ -1659,28 +1650,18 @@ function UpgradeModal({
       return;
     }
     if (code === '1519') {
-      setPromoMsg({ type: 'success', text: 'Promo 1519 applied! 100% discount unlocked.' });
-      setTimeout(() => {
-        onChoose('pro');
-        onClose();
-        Alert.alert('🎉 Pro Plus Unlocked!', 'Promo code 1519 verified successfully. Enjoy 100% free Pro access!');
-      }, 700);
+      setPromoMsg({ type: 'success', text: 'Code recognized. Secure server redemption will activate Pro when connected.' });
     } else {
       setPromoMsg({ type: 'error', text: 'Invalid promo code. Please try again.' });
     }
   };
 
   const handlePurchase = () => {
-    setPurchasing(true);
-    setTimeout(() => {
-      setPurchasing(false);
-      onChoose('pro');
-      onClose();
-      Alert.alert(
-        '🎉 Subscription Activated!',
-        `Successfully subscribed to Calo Verse Pro (${selectedPlan === 'annual' ? 'Annual Plan' : 'Monthly Plan'}) via ${platform === 'apple' ? 'Apple App Store' : 'Google Play'}. (Local Testing Mode)`
-      );
-    }, 1200);
+    setPurchasing(false);
+    Alert.alert(
+      'Store billing not connected',
+      `${platform === 'apple' ? 'Apple App Store' : 'Google Play'} billing will be enabled in the store release. No subscription was charged or activated.`
+    );
   };
 
   return (
@@ -1843,14 +1824,12 @@ function UpgradeModal({
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Pressable
               onPress={() => {
-                onChoose('pro');
-                onClose();
-                Alert.alert('Purchases Restored', 'Your previous subscription and Pro privileges have been restored.');
+                Alert.alert('Restore unavailable', 'Store billing is not connected in this test build. No account access was changed.');
               }}
             >
               <Text style={{ ...typography.label, color: colors.muted, fontSize: 10 }}>Restore Purchases</Text>
             </Pressable>
-            <Text style={styles.modalDemoNote}>Demo only · No real payment</Text>
+            <Text style={styles.modalDemoNote}>Preview only · No real payment</Text>
           </View>
           </ScrollView>
         </View>
@@ -2134,7 +2113,7 @@ const styles = StyleSheet.create({
   tierBadgeText: { ...typography.label, fontSize: 10, color: colors.primary },
   viewport: { flex: 1 },
   screenScroll: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 22, paddingBottom: 160, gap: 18 },
-  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : 40, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : 14, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
   navInner: { width: '100%', maxWidth: 760, alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-around' },
   navItem: { minWidth: 60, alignItems: 'center', gap: 3 },
   navIconWrap: { width: 43, height: 37, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
@@ -2145,16 +2124,17 @@ const styles = StyleSheet.create({
   navLabelSelected: { color: colors.primaryDark },
   levelUpButton: { backgroundColor: colors.goldSoft, minHeight: 36, borderRadius: 18, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 6 },
   levelUpText: { ...typography.label, color: '#775A12', fontSize: 11 },
-  calorieCard: { padding: 22, gap: 18 },
+  calorieCard: { padding: 16, gap: 16 },
   calorieTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  calorieTopCopy: { flex: 1, minWidth: 0, paddingRight: 10 },
   cardEyebrow: { ...typography.label, color: colors.primary, fontSize: 10, letterSpacing: 1.1 },
-  bigNumber: { ...typography.title, color: colors.primaryDark, fontSize: 44, lineHeight: 48, marginTop: 4 },
-  bigNumberSuffix: { ...typography.body, color: colors.muted, fontSize: 13 },
-  remainingBubble: { width: 94, height: 94, borderRadius: 47, backgroundColor: 'rgba(255,255,255,0.74)', borderWidth: 7, borderColor: 'rgba(40,107,87,0.12)', alignItems: 'center', justifyContent: 'center' },
-  remainingNumber: { ...typography.heading, color: colors.primaryDark, fontSize: 20 },
+  bigNumber: { ...typography.title, color: colors.primaryDark, fontSize: 38, lineHeight: 43, marginTop: 4 },
+  bigNumberSuffix: { ...typography.body, color: colors.muted, fontSize: 12, flexShrink: 1 },
+  remainingBubble: { width: 80, height: 80, borderRadius: 40, flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.74)', borderWidth: 6, borderColor: 'rgba(40,107,87,0.12)', alignItems: 'center', justifyContent: 'center' },
+  remainingNumber: { ...typography.heading, color: colors.primaryDark, fontSize: 16 },
   remainingLabel: { ...typography.label, color: colors.muted, fontSize: 9 },
   macroRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
-  miniMacro: { width: '48%', flexGrow: 1, minHeight: 102, borderRadius: 17, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
+  miniMacro: { width: '48%', height: 126, borderRadius: 17, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
   macroHint: { color: '#FFFFFF', opacity: 0.85, fontSize: 10, marginTop: 4, marginBottom: 4 },
   macroBackground: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
   macroContent: { flexDirection: 'row', alignItems: 'center', gap: 7, padding: 11 },
@@ -2333,7 +2313,7 @@ const styles = StyleSheet.create({
   safetyNote: { backgroundColor: colors.goldSoft, borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 9 },
   safetyText: { ...typography.body, color: '#725627', fontSize: 12, lineHeight: 18, flex: 1 },
   mealAiCard: { overflow: 'hidden' },
-  mealAiHero: { minHeight: 170, position: 'relative', justifyContent: 'flex-end' },
+  mealAiHero: { height: 200, maxHeight: 200, position: 'relative', justifyContent: 'flex-end', overflow: 'hidden' },
   mealAiHeroImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
   mealAiHeroContent: { padding: 20, gap: 7 },
   mealAiTitle: { ...typography.heading, color: colors.surface, fontSize: 23 },

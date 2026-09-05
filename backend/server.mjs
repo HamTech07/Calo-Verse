@@ -36,14 +36,14 @@ async function authenticate(token) {
     uid: identity.uid,
     email,
     isAdmin,
-    tier: 'pro',
+    tier: ['plus', 'pro'].includes(rawTier) ? rawTier : 'free',
     used: Number.isFinite(rawUsed) ? rawUsed : 0
   };
 }
 
 const server = createApiServer({
   authenticate, ledger,
-  estimate: (text, image, previousEstimate, audio) => estimateWithGemini(text, { image, previousEstimate, audio, apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-3.6-flash' }),
+  estimate: (text, image, previousEstimate, audio) => estimateWithGemini(text, { image, previousEstimate, audio, apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite' }),
   origins: ['http://localhost:8081', 'http://127.0.0.1:8081'],
 });
 const host = process.env.HOST || '0.0.0.0';

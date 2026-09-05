@@ -36,7 +36,7 @@ async function waitForCloud<T>(operation: Promise<T>): Promise<T> {
 const initialSession: AppSession = {
   stage: 'auth',
   profile: null,
-  tier: 'pro',
+  tier: 'free',
   activePlan: 'low',
   aiChecksUsed: 0,
   scansUsed: 0,
@@ -87,11 +87,9 @@ export default function App() {
       if (generation !== accountGeneration.current) return;
       if (!cloud) throw new Error('Account document is unavailable.');
       syncedLogs.current = cloud.logs;
-      const isOwner = identity.email.toLowerCase() === 'hamdanamir2005@gmail.com';
       setSession({
         ...initialSession,
         ...cloud,
-        tier: isOwner || cloud.tier === 'pro' ? 'pro' : (cloud.tier ?? 'pro'),
         stage: cloud.profile ? 'main' : 'onboarding',
       });
       setCloudUid(identity.uid);
@@ -183,10 +181,9 @@ export default function App() {
       update({
         stage: 'main',
         profile: { ...session.profile, name, email },
-        tier: 'pro', // Auto-unlock Pro for Hamdan
       });
     } else {
-      update({ stage: 'onboarding', tier: 'pro' });
+      update({ stage: 'onboarding' });
     }
   };
 
@@ -341,7 +338,8 @@ export default function App() {
           waterMl={session.waterMl}
           logs={session.logs}
           onTierChange={(tier: Tier) => {
-            update({ tier });
+            if (tier === 'free') return;
+            setCheckoutTier(tier);
           }}
           onPlanChange={(activePlan: PlanId) => update({ activePlan })}
           onAiUsage={(used: number) => setSession((current) => ({ ...current, aiChecksUsed: Math.max(current.aiChecksUsed, used) }))}
@@ -367,7 +365,7 @@ export default function App() {
         tier={checkoutTier}
         onClose={() => setCheckoutTier(null)}
         onComplete={() => {
-          if (checkoutTier) update({ tier: checkoutTier });
+          Alert.alert('Store billing is not connected', 'No charge was made and your plan was not changed.');
           setCheckoutTier(null);
         }}
       />
