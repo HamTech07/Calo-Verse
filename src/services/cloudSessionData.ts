@@ -16,6 +16,7 @@ export function buildSessionUpdate(session: AppSession) {
     usage: {
       aiChecksUsed: session.aiChecksUsed,
       scansUsed: session.scansUsed,
+      voiceChecksUsed: session.voiceChecksUsed,
       waterMl: session.waterMl,
     },
     trialStartedAt: session.trialStartedAt,

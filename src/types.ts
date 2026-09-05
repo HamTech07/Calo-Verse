@@ -71,6 +71,7 @@ export interface AppSession {
   customDailyTarget?: number;
   aiChecksUsed: number;
   scansUsed: number;
+  voiceChecksUsed: number;
   trialStartedAt: string;
   planStartedAt?: string;
   waterMl: number;

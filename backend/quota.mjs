@@ -7,23 +7,22 @@ export class QuotaLedger {
     this.db = new DatabaseSync(filename);
     this.db.exec('CREATE TABLE IF NOT EXISTS usage (uid TEXT PRIMARY KEY, used INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS attempts (day TEXT PRIMARY KEY, count INTEGER NOT NULL);');
     this.db.exec('CREATE TABLE IF NOT EXISTS scan_usage (uid TEXT PRIMARY KEY, used INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS scanned_images (uid TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(uid, hash));');
+    this.db.exec('CREATE TABLE IF NOT EXISTS voice_usage (uid TEXT PRIMARY KEY, used INTEGER NOT NULL);');
     this.busy = new Set();
     this.db.exec('CREATE TABLE IF NOT EXISTS scan_estimates (uid TEXT NOT NULL, hash TEXT NOT NULL, estimate TEXT NOT NULL, PRIMARY KEY(uid, hash));');
     this.lastAttempt = new Map();
   }
-  begin(uid, tier, cloudUsed = 0, now = Date.now(), photo = null) {
+  begin(uid, tier, cloudUsed = 0, now = Date.now(), photo = null, voice = false) {
     if (this.busy.has(uid)) throw new ApiError(429, 'IN_PROGRESS', 'An AI estimate is already running. Please wait.');
     if (now - (this.lastAttempt.get(uid) ?? 0) < 4000) throw new ApiError(429, 'RATE_LIMIT', 'Please wait a few seconds before asking again.');
-    const table = photo ? 'scan_usage' : 'usage';
+    const table = photo ? 'scan_usage' : voice ? 'voice_usage' : 'usage';
     const used = Math.max(this.db.prepare('SELECT used FROM ' + table + ' WHERE uid = ?').get(uid)?.used ?? 0, Number.isFinite(cloudUsed) ? Math.max(0, Math.floor(cloudUsed)) : 0);
     const knownPhoto = photo && Boolean(this.db.prepare('SELECT 1 FROM scanned_images WHERE uid = ? AND hash = ?').get(uid, photo.hash));
     if (photo) {
-      if (photo.surface === 'daily' && tier !== 'pro') throw new ApiError(402, 'PRO_REQUIRED', 'Camera meal logging requires Pro. Trial scans are available on the Scan tab.');
-      const started = Date.parse(photo.trialStartedAt);
-      if (tier !== 'pro' && (!Number.isFinite(started) || started > now || now - started >= 3 * 86400000)) throw new ApiError(402, 'SCAN_TRIAL_EXPIRED', 'Your 3-day photo trial has ended. Upgrade to Pro for camera scans.');
-      if (tier !== 'pro' && used >= 3 && !knownPhoto) throw new ApiError(402, 'SCAN_LIMIT', 'Your 3 photo scans are used. You can still refine the same photo during your trial.');
+      if (tier !== 'pro' && used >= 3 && !knownPhoto) throw new ApiError(402, 'SCAN_LIMIT', 'Your 3 free photo scans are used. You can still refine the same photo.');
     }
-    if (!photo && tier === 'free' && used >= 3) throw new ApiError(402, 'FREE_LIMIT', 'Your 3 free AI estimates are used. Manual calorie logging and food search remain available.');
+    if (voice && tier !== 'pro' && used >= 3) throw new ApiError(402, 'VOICE_LIMIT', 'Your 3 free voice estimates are used. Upgrade to Pro for unlimited voice AI.');
+    if (!photo && !voice && tier === 'free' && used >= 3) throw new ApiError(402, 'FREE_LIMIT', 'Your 3 free AI estimates are used. Manual calorie logging and food search remain available.');
     const day = new Date(now).toISOString().slice(0, 10);
     const attempts = this.db.prepare('SELECT count FROM attempts WHERE day = ?').get(day)?.count ?? 0;
     if (attempts >= 100) throw new ApiError(429, 'DAILY_SAFETY_LIMIT', 'The local AI testing limit has been reached for today.');
@@ -38,7 +37,7 @@ export class QuotaLedger {
         if (finished) return finalUsed;
         finished = true;
         this.busy.delete(uid);
-        const next = used + (success && (photo ? tier !== 'pro' && !knownPhoto : tier === 'free') ? 1 : 0);
+        const next = used + (success && (photo ? tier !== 'pro' && !knownPhoto : voice ? tier !== 'pro' : tier === 'free') ? 1 : 0);
         this.db.exec('BEGIN IMMEDIATE');
         try {
           this.db.prepare('UPDATE ' + table + ' SET used = ? WHERE uid = ?').run(next, uid);

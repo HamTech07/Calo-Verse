@@ -23,7 +23,7 @@ export async function askPhotoNutrition(text: string, image: FoodPhoto, surface:
   return requestEstimate(text, image, surface);
 }
 export type VoiceAudio = { mimeType: 'audio/wav' | 'audio/m4a'; data: string };
-export async function askVoiceNutrition(audio: VoiceAudio): Promise<{ estimate: LiveEstimate; aiChecksUsed: number }> {
+export async function askVoiceNutrition(audio: VoiceAudio): Promise<{ estimate: LiveEstimate; voiceChecksUsed: number }> {
   return requestEstimate('', undefined, undefined, audio);
 }
 async function requestEstimate(text: string, image?: FoodPhoto, surface?: 'daily' | 'scan', audio?: VoiceAudio) {
@@ -43,7 +43,8 @@ async function requestEstimate(text: string, image?: FoodPhoto, surface?: 'daily
     const result = await response.json();
     if (firebaseAuth?.currentUser?.uid !== user.uid) throw new NutritionAiError('Your account changed. Please try again.', 'ACCOUNT_CHANGED');
     if (!response.ok) throw new NutritionAiError(result.error || 'AI is unavailable. Please try again.', result.code || 'AI_UNAVAILABLE');
-    if (!result.estimate || result.estimate.source !== 'gemini' || typeof result.estimate.name !== 'string' || !Number.isFinite(image ? result.scansUsed : result.aiChecksUsed)) throw new NutritionAiError('AI returned an incomplete estimate.', 'INVALID_AI_RESPONSE');
+    const usage = image ? result.scansUsed : audio ? result.voiceChecksUsed : result.aiChecksUsed;
+    if (!result.estimate || result.estimate.source !== 'gemini' || typeof result.estimate.name !== 'string' || !Number.isFinite(usage)) throw new NutritionAiError('AI returned an incomplete estimate.', 'INVALID_AI_RESPONSE');
     for (const key of ['calories', 'protein', 'carbs', 'fats', 'fiber']) {
       if (!Number.isFinite(result.estimate[key]) || result.estimate[key] < 0) throw new NutritionAiError('AI returned invalid nutrients.', 'INVALID_AI_RESPONSE');
     }

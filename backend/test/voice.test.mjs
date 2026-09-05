@@ -59,13 +59,13 @@ test('silence/unclear speech cannot become an invented diary result', async () =
     Response.json({ candidates: [{ finishReason: 'STOP', content: { parts: [{ text: JSON.stringify({ ...meal, isFood: false, needsClarification: true }) }] } }] }) }), e => e.code === 'MORE_DETAIL_NEEDED');
 });
 
-test('voice HTTP gate rejects forged Pro and accepts verified Pro without consuming free credits', async () => {
+test('voice HTTP gate gives free and Plus three independent uses and keeps Pro unlimited', async () => {
   const ledger = new QuotaLedger(':memory:');
   let calls = 0;
   const server = createApiServer({ ledger, origins: ['http://localhost:8081'],
     authenticate: async token => {
-      if (!['free', 'plus', 'pro'].includes(token)) throw new ApiError(401, 'SIGN_IN_REQUIRED', 'Sign in.');
-      return { uid: token, tier: token, used: 2 };
+      if (!['free', 'free-limit', 'plus', 'pro'].includes(token)) throw new ApiError(401, 'SIGN_IN_REQUIRED', 'Sign in.');
+      return { uid: token, tier: token === 'free-limit' ? 'free' : token, used: 2, voiceUsed: token === 'free-limit' ? 3 : 2 };
     },
     estimate: async (_text, image, previous, audio) => { calls++; assert.equal(image, undefined); assert.equal(previous, undefined); assert.equal(audio.mimeType, 'audio/wav'); return validateEstimate(meal); },
   });
@@ -74,15 +74,21 @@ test('voice HTTP gate rejects forged Pro and accepts verified Pro without consum
   const send = (token, data = fixture()) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ text: '', audio: data, tier: 'pro' }) });
   try {
     assert.equal((await send('forged')).status, 401);
-    assert.equal((await send('free')).status, 402);
-    assert.equal((await send('plus')).status, 402);
+    const free = await send('free');
+    assert.equal(free.status, 200);
+    assert.equal((await free.json()).voiceChecksUsed, 3);
+    const plus = await send('plus');
+    assert.equal(plus.status, 200);
+    assert.equal((await plus.json()).voiceChecksUsed, 3);
+    assert.equal((await send('free-limit')).status, 402);
     assert.equal((await send('pro', { mimeType: 'audio/wav', data: 'bad' })).status, 400);
     const response = await send('pro');
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.estimate.englishText, meal.englishText);
-    assert.equal(body.aiChecksUsed, 2);
+    assert.equal(body.voiceChecksUsed, 2);
+    assert.equal(body.aiChecksUsed, undefined);
     assert.equal(body.audio, undefined);
-    assert.equal(calls, 1);
+    assert.equal(calls, 3);
   } finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); ledger.close(); }
 });

@@ -7,17 +7,17 @@ import { ClayCard, PrimaryButton } from './ui';
 import { colors, typography } from '../theme';
 import type { Food, MealType, Tier } from '../types';
 
-type Props = { tier: Tier; onUpgrade: () => void; onAiUsage: (used: number) => void; onAddFood: (food: Food, meal?: MealType, note?: string) => void };
+type Props = { tier: Tier; voiceChecksUsed: number; onUpgrade: () => void; onVoiceUsage: (used: number) => void; onAddFood: (food: Food, meal?: MealType, note?: string) => void };
 export function VoiceMealLogger(props: Props) {
   return <ClayCard style={styles.card}>
     <Text style={styles.title}>Multilingual voice AI</Text>
-    {props.tier !== 'pro' ? <>
-      <Text style={styles.body}>Pro lets you describe your meal in your language and review an English calorie estimate. Text entry and manual calorie logging remain available.</Text>
-      <PrimaryButton label="Unlock Pro voice" onPress={props.onUpgrade} icon="mic-outline" />
+    {props.tier !== 'pro' && props.voiceChecksUsed >= 3 ? <>
+      <Text style={styles.body}>Your 3 free voice estimates are used. Text entry and manual calorie logging remain available.</Text>
+      <PrimaryButton label="Unlock unlimited Pro voice" onPress={props.onUpgrade} icon="mic-outline" />
     </> : <VoiceRecorder {...props} />}
   </ClayCard>;
 }
-function VoiceRecorder({ onAddFood, onAiUsage }: Props) {
+function VoiceRecorder({ tier, voiceChecksUsed, onAddFood, onVoiceUsage }: Props) {
   const recorder = useMealRecorder();
   const player = useAudioPlayer(recorder.clip?.uri ?? null);
   const playback = useAudioPlayerStatus(player);
@@ -41,7 +41,7 @@ function VoiceRecorder({ onAddFood, onAiUsage }: Props) {
     operation.current = true; setBusy(true); setError(''); player.pause();
     try {
       const response = corrected ? await askNutritionAi(translation.trim()) : await askVoiceNutrition({ mimeType: recorder.clip!.mimeType, data: recorder.clip!.data });
-      onAiUsage(response.aiChecksUsed);
+      if (!corrected) onVoiceUsage((response as Awaited<ReturnType<typeof askVoiceNutrition>>).voiceChecksUsed);
       if (!alive.current) return;
       setEstimate(response.estimate); setTranslation(response.estimate.englishText);
     } catch (e) { if (alive.current) setError(e instanceof Error ? e.message : 'Voice AI is unavailable. Please try text input.'); }
@@ -61,6 +61,7 @@ function VoiceRecorder({ onAddFood, onAiUsage }: Props) {
   };
   return <View style={styles.content}>
     <Text style={styles.body}>Say what you ate, how much, and any oil or sauces. Speak in your language; review the English translation before saving.</Text>
+    <Text style={styles.label}>{tier === 'pro' ? 'Unlimited voice estimates' : `${Math.max(0, 3 - voiceChecksUsed)} of 3 free voice estimates remaining`}</Text>
     <Text style={styles.notice}>Recording stays on this device until you press Send voice to Gemini. Google free-tier audio may be used to improve products. Avoid personal details or other people's voices. Raw audio is not saved to your diary.</Text>
     {recorder.phase === 'recording' ? <>
       <Text accessibilityLiveRegion="polite" style={styles.recording}>● Recording · {recorder.seconds}s / 45s</Text>

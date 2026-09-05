@@ -50,7 +50,7 @@ export async function ensureUserDocument(identity: AuthIdentity) {
         tier: 'free',
         profile: null,
         preferences: { activePlan: 'low' },
-        usage: { aiChecksUsed: 0, scansUsed: 0, waterMl: 0 },
+        usage: { aiChecksUsed: 0, scansUsed: 0, voiceChecksUsed: 0, waterMl: 0 },
         trialStartedAt: new Date().toISOString(),
         schemaVersion: 1,
         createdAt: serverTimestamp(),
@@ -94,6 +94,7 @@ export async function loadCloudSession(uid: string): Promise<CloudSession | null
       : typeof data.trialStartedAt === 'string' ? data.trialStartedAt : undefined,
     aiChecksUsed: safeNumber(usage.aiChecksUsed),
     scansUsed: safeNumber(usage.scansUsed),
+    voiceChecksUsed: safeNumber(usage.voiceChecksUsed),
     trialStartedAt:
       typeof data.trialStartedAt === 'string' ? data.trialStartedAt : new Date().toISOString(),
     waterMl: safeNumber(usage.waterMl),

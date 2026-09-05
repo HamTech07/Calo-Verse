@@ -1,18 +1,30 @@
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { initializeApp } from 'firebase-admin/app';
+import { cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { ApiError, estimateWithGemini } from './gemini.mjs';
 import { QuotaLedger } from './quota.mjs';
 import { createApiServer } from './http.mjs';
+import { activeTier, PromoAttempts, SubscriptionService } from './subscriptions.mjs';
 
 const projectId = process.env.FIREBASE_PROJECT_ID || 'caloverse';
 if (!process.env.GEMINI_API_KEY) { console.error('Missing GEMINI_API_KEY in backend/.env.'); process.exit(1); }
 if (process.env.FIREBASE_AUTH_EMULATOR_HOST) { console.error('Remove the auth emulator override before using real AI.'); process.exit(1); }
-const auth = getAuth(initializeApp({ projectId }));
+let serviceAccount;
+try { serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON) : undefined; }
+catch { console.error('FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.'); process.exit(1); }
+const adminApp = initializeApp({ projectId, ...(serviceAccount ? { credential: cert(serviceAccount) } : {}) });
+const auth = getAuth(adminApp);
 const dataDir = fileURLToPath(new URL('./data/', import.meta.url));
 mkdirSync(dataDir, { recursive: true });
 const ledger = new QuotaLedger(dataDir + '/usage.sqlite');
+const subscriptions = serviceAccount ? new SubscriptionService({
+  db: getFirestore(adminApp),
+  code: process.env.PROMO_CODE || '1519',
+  enabled: process.env.PROMO_ENABLED !== 'false',
+  attempts: new PromoAttempts(ledger.db),
+}) : undefined;
 
 async function authenticate(token) {
   let identity;
@@ -27,22 +39,27 @@ async function authenticate(token) {
   const rawTier = fields.tier?.stringValue;
   const rawUsed = Number(fields.usage?.mapValue?.fields?.aiChecksUsed?.integerValue ?? 0);
   const rawScans = Number(fields.usage?.mapValue?.fields?.scansUsed?.integerValue ?? 0);
+  const rawVoice = Number(fields.usage?.mapValue?.fields?.voiceChecksUsed?.integerValue ?? 0);
   const email = identity.email || '';
   const isAdmin = email.toLowerCase() === 'hamdanamir2005@gmail.com' || (process.env.ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).includes(email.toLowerCase());
+  const subscription = subscriptions ? await subscriptions.current(identity.uid) : null;
+  const cachedTier = ['plus', 'pro'].includes(rawTier) ? rawTier : 'free';
   // Account creation is immutable in existing rules; resetting a plan cannot restart the photo trial.
   return {
     scansUsed: Number.isFinite(rawScans) ? rawScans : 0,
+    voiceUsed: Number.isFinite(rawVoice) ? rawVoice : 0,
     trialStartedAt: fields.createdAt?.timestampValue || fields.trialStartedAt?.stringValue,
     uid: identity.uid,
     email,
     isAdmin,
-    tier: ['plus', 'pro'].includes(rawTier) ? rawTier : 'free',
+    subscription,
+    tier: subscription ? activeTier(subscription) : cachedTier,
     used: Number.isFinite(rawUsed) ? rawUsed : 0
   };
 }
 
 const server = createApiServer({
-  authenticate, ledger,
+  authenticate, ledger, subscriptions,
   estimate: (text, image, previousEstimate, audio) => estimateWithGemini(text, { image, previousEstimate, audio, apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite' }),
   origins: ['http://localhost:8081', 'http://127.0.0.1:8081'],
 });

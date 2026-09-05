@@ -77,14 +77,14 @@ test('failed scans do not consume credits; finish is idempotent', () => {
   } finally { ledger.close(); }
 });
 
-test('daily camera requires Pro and expired, future or missing trials fail closed', () => {
+test('free and Plus camera access is governed by three uses, not date or screen', () => {
   const ledger = new QuotaLedger(':memory:');
   try {
     for (const tier of ['free', 'plus']) {
-      assert.throws(() => ledger.begin(tier, tier, 0, 10000, trial('x', 'daily')), e => e.code === 'PRO_REQUIRED');
-      assert.throws(() => ledger.begin(tier, tier, 0, 3 * 86400000, trial()), e => e.code === 'SCAN_TRIAL_EXPIRED');
-      assert.throws(() => ledger.begin(tier, tier, 0, 10000, { ...trial(), trialStartedAt: 'bad' }), e => e.code === 'SCAN_TRIAL_EXPIRED');
-      assert.throws(() => ledger.begin(tier, tier, 0, 10000, { ...trial(), trialStartedAt: new Date(20000).toISOString() }), e => e.code === 'SCAN_TRIAL_EXPIRED');
+      assert.equal(ledger.begin(tier, tier, 0, 10000, trial('x', 'daily')).finish(true), 1);
+      assert.equal(ledger.begin(tier, tier, 0, 15000, { ...trial('y'), trialStartedAt: 'bad' }).finish(true), 2);
+      assert.equal(ledger.begin(tier, tier, 0, 20000, { ...trial('z'), trialStartedAt: new Date(30000).toISOString() }).finish(true), 3);
+      assert.throws(() => ledger.begin(tier, tier, 0, 25000, trial('fourth')), e => e.code === 'SCAN_LIMIT');
     }
     assert.equal(ledger.begin('pro', 'pro', 3, 3 * 86400000, trial('x', 'daily')).finish(true), 3);
   } finally { ledger.close(); }
@@ -102,7 +102,7 @@ test('scan credits and refinement hashes survive restarts and cannot be reduced 
   } finally { ledger.close(); unlinkSync(file); rmdirSync(dir); }
 });
 
-test('HTTP photo endpoint enforces authentication, Pro gates, validation and server-side usage', async () => {
+test('HTTP photo endpoint allows three free scans on both screens and enforces server usage', async () => {
   const ledger = new QuotaLedger(':memory:');
   let calls = 0;
   const server = createApiServer({ ledger, origins: ['http://localhost:8081'],
@@ -118,9 +118,8 @@ test('HTTP photo endpoint enforces authentication, Pro gates, validation and ser
   const send = (body, auth = 'valid') => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + auth }, body: JSON.stringify(body) });
   try {
     assert.equal((await send({ text: '', surface: 'scan', image }, 'forged')).status, 401);
-    assert.equal((await send({ text: '', surface: 'daily', image, tier: 'pro' })).status, 402);
     assert.equal((await send({ text: '', surface: 'scan', image: { data: 'invalid', mimeType: 'image/jpeg' } })).status, 400);
-    const result = await send({ text: 'Extra ghee', surface: 'scan', image, tier: 'pro', scansUsed: 0 });
+    const result = await send({ text: 'Extra ghee', surface: 'daily', image, tier: 'pro', scansUsed: 0 });
     assert.equal(result.status, 200);
     const body = await result.json();
     assert.equal(body.scansUsed, 3);

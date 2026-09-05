@@ -14,7 +14,7 @@ test('manual calories never confuse grams, milliliters or counts with calories',
 
 const session = {
   stage: 'main', profile: null, tier: 'pro', activePlan: 'bulk',
-  aiChecksUsed: 2, scansUsed: 1, waterMl: 500,
+  aiChecksUsed: 2, scansUsed: 1, voiceChecksUsed: 2, waterMl: 500,
   trialStartedAt: '2026-09-02T00:00:00.000Z', logs: [],
 };
 const log = (id, calories = 500) => ({
@@ -34,6 +34,7 @@ for (const [goal, expectedPlan] of [['lose', 'low'], ['maintain', 'low'], ['gain
     assert.equal(next.trialStartedAt, previous.trialStartedAt);
     assert.equal(next.aiChecksUsed, previous.aiChecksUsed);
     assert.equal(next.scansUsed, previous.scansUsed);
+    assert.equal(next.voiceChecksUsed, previous.voiceChecksUsed);
     assert.equal(next.tier, previous.tier);
     assert.equal(next.waterMl, previous.waterMl);
     assert.deepEqual(next.logs, previous.logs);
@@ -56,7 +57,7 @@ test('client updates never contain subscription tier or UI state', () => {
   assert.equal('tier' in result, false);
   assert.equal('stage' in result, false);
   assert.equal('logs' in result, false);
-  assert.deepEqual(result.usage, { aiChecksUsed: 2, scansUsed: 1, waterMl: 500 });
+  assert.deepEqual(result.usage, { aiChecksUsed: 2, scansUsed: 1, voiceChecksUsed: 2, waterMl: 500 });
 });
 
 test('optional undefined values are omitted', () => {

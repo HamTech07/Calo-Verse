@@ -22,7 +22,7 @@ type Props = {
 };
 
 // Photo state is temporary (native tools may use device cache); diary data never includes the photo.
-export function PhotoMealScanner({ tier, scansUsed, trialStartedAt, surface, onUpgrade, onScanUsage, onAddFood }: Props) {
+export function PhotoMealScanner({ tier, scansUsed, trialStartedAt: _trialStartedAt, surface, onUpgrade, onScanUsage, onAddFood }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const camera = useRef<CameraView>(null);
   const alive = useRef(true);
@@ -46,9 +46,7 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt, surface, onU
     return () => { alive.current = false; selection.current++; };
   }, []);
 
-  const elapsed = Date.now() - Date.parse(trialStartedAt);
-  const expired = !Number.isFinite(elapsed) || elapsed < 0 || elapsed >= 3 * 86400000;
-  const locked = tier !== 'pro' && (surface === 'daily' || expired);
+  const locked = tier !== 'pro' && scansUsed >= 3;
   const closeCamera = (cancel = true) => { if (cancel) selection.current++; setOpen(false); setCameraReady(false); };
   const beginCamera = async () => {
     if (working.current) return;
@@ -144,9 +142,9 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt, surface, onU
   return (
     <ClayCard style={styles.card}>
       <Text style={styles.title}>Camera + text meal logger</Text>
-      <Text style={styles.body}>{surface === 'daily' ? 'Pro camera meal logging' : tier === 'pro' ? 'Pro photo scans' : Math.max(0, 3 - scansUsed) + ' photo scans remaining · 3-day trial'}</Text>
+      <Text style={styles.body}>{tier === 'pro' ? 'Unlimited Pro photo scans' : Math.max(0, 3 - scansUsed) + ' of 3 free photo scans remaining'}</Text>
       {locked ? <>
-        <Text style={styles.body}>{surface === 'daily' ? 'Scan a meal and add preparation details with Pro. Trial scans are available on the Scan tab.' : 'Your photo trial has ended. Manual food search and calorie logging remain available.'}</Text>
+        <Text style={styles.body}>Your 3 free photo scans are used. Manual food search and calorie logging remain available.</Text>
         <PrimaryButton label="View Pro plan" onPress={onUpgrade} icon="lock-closed-outline" />
       </> : <>
         <Text style={styles.body}>Photograph only your food. Add the portion, oil, ghee or sauces so they can be included in the estimate.</Text>
@@ -161,7 +159,7 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt, surface, onU
         <TextInput accessibilityLabel="Photo preparation details" placeholder="Example: 1 bowl of nihari with 1 tablespoon of extra ghee" value={notes} onChangeText={setNotes} maxLength={2000} multiline editable={!busy && !saved} style={styles.input} placeholderTextColor={colors.muted} />
         <Text style={styles.body}>Send shares this food photo and your notes with Google Gemini. Free-tier inputs may be used by Google to improve products. Do not include faces or private information. Calo Verse saves only the English estimate, not your photo.</Text>
         <PrimaryButton label={estimate ? 'Send updated details to Gemini' : 'Send to Gemini'} disabled={!photo || saved} loading={busy} onPress={() => { void analyze(); }} icon="sparkles-outline" />
-        <Text style={styles.body}>One successful new photo uses one trial scan. Refining the same photo does not use another scan, while your trial is active. Failed estimates do not use a scan.</Text>
+        <Text style={styles.body}>One successful new photo uses one free scan. Refining the same photo does not use another scan. Failed estimates do not use a scan.</Text>
         {estimate ? <View style={styles.result}>
           <Text style={styles.title}>{estimate.name}</Text>
           <Text style={styles.calories}>{estimate.calories} kcal</Text>

@@ -42,14 +42,17 @@ interface MainAppProps {
   activePlan: PlanId;
   aiChecksUsed: number;
   scansUsed: number;
+  voiceChecksUsed: number;
   trialStartedAt: string;
   planStartedAt: string;
   waterMl: number;
   logs: FoodLog[];
   onTierChange: (tier: Tier) => void;
+  onPromoRedeem: (code: string, tier: 'plus' | 'pro') => Promise<Tier>;
   onPlanChange: (plan: PlanId) => void;
   onAiUsage: (used: number) => void;
   onScanUsage: (used: number) => void;
+  onVoiceUsage: (used: number) => void;
   onWaterChange: (waterMl: number) => void;
   onAddFood: (food: Food, mealType?: MealType, note?: string, loggedAt?: string) => void;
   onRemoveFoodLog?: (id: string) => void;
@@ -154,7 +157,8 @@ export function MainApp(props: MainAppProps) {
             scansUsed={props.scansUsed}
             trialStartedAt={props.trialStartedAt}
             onScanUsage={props.onScanUsage}
-            onAiUsage={props.onAiUsage}
+            voiceChecksUsed={props.voiceChecksUsed}
+            onVoiceUsage={props.onVoiceUsage}
             onAddFood={props.onAddFood}
             onUpgrade={() => openUpgrade('Upgrade to Pro to use unlimited AI photo scans and multilingual voice guidance.')}
           />
@@ -169,11 +173,14 @@ export function MainApp(props: MainAppProps) {
             trialStartedAt={props.trialStartedAt}
             planStartedAt={props.planStartedAt}
             aiChecksUsed={props.aiChecksUsed}
+            scansUsed={props.scansUsed}
             onAiUsage={props.onAiUsage}
+            onScanUsage={props.onScanUsage}
             onUpgrade={openUpgrade}
             onAddFood={props.onAddFood}
             onPlanChange={props.onPlanChange}
             onTierChange={props.onTierChange}
+            onPromoRedeem={props.onPromoRedeem}
           />
         ) : null}
         {tab === 'profile' ? (
@@ -511,7 +518,7 @@ function DashboardTab({
 
         <View style={styles.monthlyBudgetCard}>
           <View style={styles.monthlyBudgetTop}>
-            <View>
+            <View style={styles.monthlyBudgetCopy}>
               <Text style={styles.monthlyBudgetLabel}>30-DAY CALORIE BUDGET</Text>
               <Text style={styles.monthlyBudgetValue}>{monthlyConsumed.toLocaleString()} / {targets.monthlyCalories.toLocaleString()} kcal</Text>
             </View>
@@ -827,7 +834,7 @@ function MiniMacro({ label, value, target, color, image }: { label: 'Protein' | 
   return (
     <NutrientInfoCard nutrient={label.toLowerCase() as Nutrient} style={styles.miniMacro}>
       <FoodImage source={image} style={styles.macroBackground} />
-      <LinearGradient colors={['rgba(10,24,20,0.08)', 'rgba(10,24,20,0.92)']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={['rgba(10,24,20,0.02)', 'rgba(10,24,20,0.62)']} style={StyleSheet.absoluteFill} />
       <View style={styles.macroContent}>
         <View style={[styles.macroDot, { backgroundColor: color }]} />
         <View style={{ flex: 1 }}>
@@ -1137,12 +1144,12 @@ function FoodsTab({
   );
 }
 
-function ScanTab(props: Omit<React.ComponentProps<typeof PhotoMealScanner>, 'surface'> & { onAiUsage: (used: number) => void }) {
+function ScanTab(props: Omit<React.ComponentProps<typeof PhotoMealScanner>, 'surface'> & { voiceChecksUsed: number; onVoiceUsage: (used: number) => void }) {
   return (
     <ScreenScroll>
       <ScreenTitle eyebrow="MEAL SCANNER" title="Scan or speak" subtitle="Capture a photo or describe your meal by voice. Review the English estimate before saving." />
       <PhotoMealScanner {...props} surface="scan" />
-      <VoiceMealLogger tier={props.tier} onAddFood={props.onAddFood} onAiUsage={props.onAiUsage} onUpgrade={props.onUpgrade} />
+      <VoiceMealLogger tier={props.tier} voiceChecksUsed={props.voiceChecksUsed} onAddFood={props.onAddFood} onVoiceUsage={props.onVoiceUsage} onUpgrade={props.onUpgrade} />
     </ScreenScroll>
   );
 }
@@ -1156,11 +1163,14 @@ function PlansTab({
   trialStartedAt,
   planStartedAt,
   aiChecksUsed,
+  scansUsed,
   onAiUsage,
+  onScanUsage,
   onUpgrade,
   onAddFood,
   onPlanChange,
   onTierChange,
+  onPromoRedeem,
 }: {
   activePlan: PlanId;
   tier: Tier;
@@ -1170,14 +1180,18 @@ function PlansTab({
   trialStartedAt: string;
   planStartedAt: string;
   aiChecksUsed: number;
+  scansUsed: number;
   onAiUsage: (used: number) => void;
+  onScanUsage: (used: number) => void;
   onUpgrade: (reason: string) => void;
   onAddFood: (food: Food, mealType?: MealType, note?: string, loggedAt?: string) => void;
   onPlanChange: (plan: PlanId) => void;
   onTierChange: (tier: Tier) => void;
+  onPromoRedeem: (code: string, tier: 'plus' | 'pro') => Promise<Tier>;
 }) {
   const [promo, setPromo] = useState('');
   const [promoMessage, setPromoMessage] = useState('');
+  const [promoBusy, setPromoBusy] = useState(false);
   const [planMealInput, setPlanMealInput] = useState('');
   const [planMealReply, setPlanMealReply] = useState<{ headline: string; detail: string } | null>(null);
   const currentPlanDay = Math.min(30, Math.max(1, Math.floor((startOfLocalDay(Date.now()).getTime() - startOfLocalDay(planStartedAt).getTime()) / DAY_MS) + 1));
@@ -1326,7 +1340,7 @@ function PlansTab({
 
       <ClayCard style={styles.scheduleCard}>
         <View style={styles.scheduleHeader}>
-          <View>
+          <View style={styles.scheduleHeaderCopy}>
             <Text style={styles.cardEyebrow}>30-DAY FLEXIBLE SCHEDULE</Text>
             <Text style={styles.scheduleTitle}>{monthlyConsumed.toLocaleString()} / {monthlyTarget.toLocaleString()} kcal</Text>
             <Text style={styles.scheduleSubtitle}>Unused calories roll into the next active day. Free preview includes Days 1–3.</Text>
@@ -1356,6 +1370,16 @@ function PlansTab({
           })}
         </ScrollView>
       </ClayCard>
+
+      <PhotoMealScanner
+        surface="daily"
+        tier={tier}
+        scansUsed={scansUsed}
+        trialStartedAt={trialStartedAt}
+        onScanUsage={onScanUsage}
+        onAddFood={(food, mealType, note) => onAddFood(food, mealType, note, selectedPlanDay.date.toISOString())}
+        onUpgrade={() => onUpgrade('Your 3 free camera scans are used. Upgrade to Pro for unlimited camera meal logging.')}
+      />
 
       {/* AI Plan Meal Check-in Box */}
       <ClayCard style={styles.mealAiCard}>
@@ -1437,18 +1461,21 @@ function PlansTab({
           style={styles.promoInput}
         />
         <Pressable
+          disabled={promoBusy}
           onPress={() => {
-            const clean = promo.trim().toUpperCase();
-            if (clean === '1519') {
-              onTierChange('pro');
-              setPromoMessage('Continue to secure checkout to verify this promotion.');
-            } else {
-              setPromoMessage('That promo code could not be verified.');
-            }
+            if (promoBusy) return;
+            setPromoBusy(true);
+            setPromoMessage('Verifying securely…');
+            void onPromoRedeem(promo, 'pro').then(() => {
+              setPromoMessage('100% discount applied. Pro is active for 30 days.');
+              setPromo('');
+            }).catch((error) => {
+              setPromoMessage(error instanceof Error ? error.message : 'That promo code could not be verified.');
+            }).finally(() => setPromoBusy(false));
           }}
-          style={styles.applyButton}
+          style={[styles.applyButton, promoBusy && { opacity: 0.6 }]}
         >
-          <Text style={styles.applyText}>Apply</Text>
+          <Text style={styles.applyText}>{promoBusy ? 'Wait' : 'Apply'}</Text>
         </Pressable>
       </ClayCard>
       {promoMessage ? <Text style={styles.promoMessage}>{promoMessage}</Text> : null}
@@ -2134,10 +2161,10 @@ const styles = StyleSheet.create({
   remainingNumber: { ...typography.heading, color: colors.primaryDark, fontSize: 16 },
   remainingLabel: { ...typography.label, color: colors.muted, fontSize: 9 },
   macroRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
-  miniMacro: { width: '48%', height: 126, borderRadius: 17, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
+  miniMacro: { width: '48%', height: 142, borderRadius: 17, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
   macroHint: { color: '#FFFFFF', opacity: 0.85, fontSize: 10, marginTop: 4, marginBottom: 4 },
-  macroBackground: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
-  macroContent: { flexDirection: 'row', alignItems: 'center', gap: 7, padding: 11 },
+  macroBackground: { ...StyleSheet.absoluteFillObject },
+  macroContent: { flexDirection: 'row', alignItems: 'center', gap: 7, padding: 11, position: 'relative', zIndex: 2 },
   macroDot: { width: 7, height: 29, borderRadius: 5 },
   macroLabel: { ...typography.label, color: 'rgba(255,255,255,0.78)', fontSize: 9 },
   macroValue: { ...typography.label, color: colors.surface, fontSize: 11 },
@@ -2145,14 +2172,15 @@ const styles = StyleSheet.create({
   macroProgressFill: { height: 3, borderRadius: 2 },
   monthlyBudgetCard: { borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: 'rgba(211,168,58,0.22)', padding: 15, gap: 10 },
   monthlyBudgetTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+  monthlyBudgetCopy: { flex: 1, minWidth: 0 },
   monthlyBudgetLabel: { ...typography.label, color: colors.muted, fontSize: 9, letterSpacing: 1 },
   monthlyBudgetValue: { ...typography.heading, color: colors.primaryDark, fontSize: 19, marginTop: 3 },
-  monthlyDayBadge: { ...typography.label, color: '#765B15', backgroundColor: colors.goldSoft, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 11, fontSize: 9 },
+  monthlyDayBadge: { ...typography.label, color: '#765B15', backgroundColor: colors.goldSoft, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 11, fontSize: 9, flexShrink: 0, alignSelf: 'flex-start' },
   monthlyBudgetHint: { ...typography.body, color: colors.muted, fontSize: 10, lineHeight: 15 },
   quickRow: { flexDirection: 'row', gap: 12 },
   quickPress: { flex: 1 },
   quickCard: { minHeight: 148, position: 'relative' },
-  quickBackground: { position: 'absolute', width: '100%', height: '100%' },
+  quickBackground: { ...StyleSheet.absoluteFillObject },
   quickContent: { flex: 1, justifyContent: 'flex-end', padding: 15, gap: 5 },
   quickIcon: { width: 42, height: 42, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
   quickLock: { position: 'absolute', right: 4, top: 4 },
@@ -2195,10 +2223,10 @@ const styles = StyleSheet.create({
   notice: { ...typography.body, color: colors.muted, fontSize: 11, flex: 1 },
   searchCount: { ...typography.label, color: '#9A5C37', fontSize: 11 },
   unlimited: { ...typography.label, color: colors.primary, fontSize: 11 },
-  aiAssistantCard: { minHeight: 180, overflow: 'hidden', position: 'relative', justifyContent: 'center' },
-  aiAssistantImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
-  aiAssistantShade: { ...StyleSheet.absoluteFillObject },
-  aiAssistantContent: { padding: 21, gap: 8 },
+  aiAssistantCard: { minHeight: 260, overflow: 'hidden', position: 'relative', justifyContent: 'center' },
+  aiAssistantImage: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
+  aiAssistantShade: { ...StyleSheet.absoluteFillObject, zIndex: 1 },
+  aiAssistantContent: { padding: 21, gap: 8, position: 'relative', zIndex: 2, elevation: 2 },
   aiAssistantTop: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   aiAssistantIcon: { width: 32, height: 32, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
   aiAssistantEyebrow: { ...typography.label, color: '#F5D98A', fontSize: 10, letterSpacing: 1.1 },
@@ -2269,7 +2297,7 @@ const styles = StyleSheet.create({
   confidenceText: { ...typography.label, color: colors.primary, fontSize: 10 },
   scanMacroRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   photoMetric: { width: '48%', minWidth: 126, minHeight: 96, flexGrow: 1, borderRadius: 18, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
-  photoMetricImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+  photoMetricImage: { ...StyleSheet.absoluteFillObject },
   photoMetricContent: { padding: 13 },
   scanExplanationBox: { borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.72)', padding: 13, flexDirection: 'row', alignItems: 'flex-start', gap: 9 },
   scanExplanationText: { ...typography.body, color: colors.primaryDark, flex: 1, fontSize: 12, lineHeight: 18 },
@@ -2283,9 +2311,10 @@ const styles = StyleSheet.create({
   planList: { gap: 13 },
   scheduleCard: { padding: 18, gap: 14 },
   scheduleHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  scheduleHeaderCopy: { flex: 1, minWidth: 0 },
   scheduleTitle: { ...typography.title, color: colors.primaryDark, fontSize: 25, marginTop: 3 },
   scheduleSubtitle: { ...typography.body, color: colors.muted, fontSize: 11, lineHeight: 16, marginTop: 3, maxWidth: 500 },
-  scheduleMonthBadge: { backgroundColor: colors.goldSoft, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12 },
+  scheduleMonthBadge: { backgroundColor: colors.goldSoft, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 12, flexShrink: 0, alignSelf: 'flex-start' },
   scheduleMonthBadgeText: { ...typography.label, color: '#765B15', fontSize: 9 },
   dayRail: { gap: 9, paddingVertical: 3, paddingRight: 8 },
   dayCard: { width: 126, minHeight: 118, borderRadius: 19, backgroundColor: colors.surfaceSoft, borderWidth: 1, borderColor: colors.outline, padding: 12, gap: 5 },
@@ -2314,7 +2343,7 @@ const styles = StyleSheet.create({
   safetyText: { ...typography.body, color: '#725627', fontSize: 12, lineHeight: 18, flex: 1 },
   mealAiCard: { overflow: 'hidden' },
   mealAiHero: { height: 200, maxHeight: 200, position: 'relative', justifyContent: 'flex-end', overflow: 'hidden' },
-  mealAiHeroImage: { ...StyleSheet.absoluteFillObject, width: '100%', height: '100%' },
+  mealAiHeroImage: { ...StyleSheet.absoluteFillObject },
   mealAiHeroContent: { padding: 20, gap: 7 },
   mealAiTitle: { ...typography.heading, color: colors.surface, fontSize: 23 },
   mealAiSubtitle: { ...typography.body, color: 'rgba(255,255,255,0.84)', fontSize: 12, lineHeight: 18, maxWidth: 590 },

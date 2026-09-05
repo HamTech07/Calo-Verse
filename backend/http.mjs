@@ -54,7 +54,6 @@ export function createApiServer({ authenticate, estimate, ledger, subscriptions,
       const bearer = req.headers.authorization?.match(/^Bearer (\S+)$/)?.[1];
       if (!bearer || bearer.length > 12000) throw new ApiError(401, 'SIGN_IN_REQUIRED', 'Please sign in before using AI.');
       const account = await authenticate(bearer);
-      if (isVoice && account.tier !== 'pro') throw new ApiError(402, 'PRO_REQUIRED', 'Multilingual voice AI requires Pro. Text estimates and manual logging remain available.');
       const limit = isPhoto ? 5605000 : isVoice ? 2808000 : 12000;
       if (Number(req.headers['content-length'] ?? 0) > limit) throw new ApiError(413, 'INPUT_TOO_LARGE', 'The request is too large. Use a smaller photo or shorter description.');
       const chunks = [];
@@ -68,17 +67,16 @@ export function createApiServer({ authenticate, estimate, ledger, subscriptions,
       try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { throw new ApiError(400, 'INVALID_JSON', 'Invalid request.'); }
       if (!body || typeof body.text !== 'string' || (!isPhoto && !isVoice && !body.text.trim()) || body.text.length > 2000) throw new ApiError(400, 'INVALID_INPUT', 'Enter a food description of up to 2,000 characters.');
       if (isPhoto && !['scan', 'daily'].includes(body.surface)) throw new ApiError(400, 'INVALID_INPUT', 'Choose a scan location.');
-      if (isPhoto && body.surface === 'daily' && account.tier !== 'pro') throw new ApiError(402, 'PRO_REQUIRED', 'Camera meal logging requires Pro.');
       const image = isPhoto ? await preparePhoto(body.image) : undefined;
       const audio = isVoice ? await prepareVoice(body.audio) : undefined;
-      const reservation = ledger.begin(account.uid, account.tier, isPhoto ? account.scansUsed : account.used, Date.now(),
-        isPhoto ? { hash: image.hash, surface: body.surface, trialStartedAt: account.trialStartedAt } : null);
+      const reservation = ledger.begin(account.uid, account.tier, isPhoto ? account.scansUsed : isVoice ? account.voiceUsed : account.used, Date.now(),
+        isPhoto ? { hash: image.hash, surface: body.surface, trialStartedAt: account.trialStartedAt } : null, isVoice);
       try {
         const previous = isPhoto ? ledger.previousPhotoEstimate(account.uid, image.hash) : undefined;
         const result = await estimate(isVoice ? 'Translate the spoken meal into English and estimate its nutrition. Do not invent words for silence or unclear speech.' : body.text.trim() || 'Estimate the food in this photo. State your portion assumptions.', image, previous, audio);
         if (isVoice) requireEnglishVoiceEstimate(result);
         const used = reservation.finish(true, isPhoto ? result : undefined);
-        reply(res, 200, { estimate: result, ...(isPhoto ? { scansUsed: used } : { aiChecksUsed: used }) });
+        reply(res, 200, { estimate: result, ...(isPhoto ? { scansUsed: used } : isVoice ? { voiceChecksUsed: used } : { aiChecksUsed: used }) });
       } catch (error) { reservation.finish(false); throw error; }
     } catch (error) {
       const safe = error instanceof ApiError ? error : new ApiError(503, 'SERVICE_UNAVAILABLE', 'The AI service is unavailable. Please try again later.');

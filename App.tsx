@@ -16,6 +16,7 @@ import { calculateTargets } from './src/utils/nutrition';
 import { AuthIdentity, createEmailAccount, observeAuth, signInWithEmail, signInWithGoogle, signOutAccount } from './src/services/auth';
 import { isFirebaseConfigured } from './src/services/firebase';
 import { ensureUserDocument, loadCloudSession, syncCloudSession } from './src/services/firestore';
+import { redeemPromo } from './src/services/subscriptions';
 
 const STORAGE_KEY = '@calo-verse/demo-session-v1';
 
@@ -40,6 +41,7 @@ const initialSession: AppSession = {
   activePlan: 'low',
   aiChecksUsed: 0,
   scansUsed: 0,
+  voiceChecksUsed: 0,
   trialStartedAt: new Date().toISOString(),
   waterMl: 0,
   logs: [],
@@ -223,6 +225,7 @@ export default function App() {
       activePlan: recommendedPlan,
       aiChecksUsed: 0,
       scansUsed: 0,
+      voiceChecksUsed: 0,
       trialStartedAt: new Date().toISOString(),
       planStartedAt: new Date().toISOString(),
       waterMl: 0,
@@ -333,6 +336,7 @@ export default function App() {
           activePlan={session.activePlan}
           aiChecksUsed={session.aiChecksUsed}
           scansUsed={session.scansUsed}
+          voiceChecksUsed={session.voiceChecksUsed}
           trialStartedAt={session.trialStartedAt}
           planStartedAt={session.planStartedAt ?? session.trialStartedAt}
           waterMl={session.waterMl}
@@ -341,9 +345,15 @@ export default function App() {
             if (tier === 'free') return;
             setCheckoutTier(tier);
           }}
+          onPromoRedeem={async (code, tier) => {
+            const verifiedTier = await redeemPromo(code, tier);
+            update({ tier: verifiedTier });
+            return verifiedTier;
+          }}
           onPlanChange={(activePlan: PlanId) => update({ activePlan })}
           onAiUsage={(used: number) => setSession((current) => ({ ...current, aiChecksUsed: Math.max(current.aiChecksUsed, used) }))}
           onScanUsage={(used) => setSession((current) => ({ ...current, scansUsed: Math.max(current.scansUsed, used) }))}
+          onVoiceUsage={(used) => setSession((current) => ({ ...current, voiceChecksUsed: Math.max(current.voiceChecksUsed, used) }))}
           onWaterChange={(waterMl: number) => update({ waterMl })}
           onAddFood={addFood}
           onRemoveFoodLog={removeFoodLog}
