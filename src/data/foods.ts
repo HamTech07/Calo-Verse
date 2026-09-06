@@ -19,11 +19,11 @@ export const BUNDLED_FOOD_IMAGES = {
 // Individual food-card photography. These files are bundled in the APK so the
 // South Asian search results do not fall back to the same generic rice photo.
 const SOUTH_ASIAN_FOOD_IMAGES: Record<string, ImageSourcePropType> = {
-  sa_101: require('../../assets/sa_101.jpg') as ImageSourcePropType,
+  sa_101: require('../../assets/dish-biryani.png') as ImageSourcePropType,
   sa_102: BUNDLED_FOOD_IMAGES.daalTadka,
-  sa_103: require('../../assets/sa_103.jpg') as ImageSourcePropType,
-  sa_104: require('../../assets/sa_104.jpg') as ImageSourcePropType,
-  sa_105: require('../../assets/sa_105.jpg') as ImageSourcePropType,
+  sa_103: require('../../assets/dish-karahi.png') as ImageSourcePropType,
+  sa_104: require('../../assets/dish-paratha.png') as ImageSourcePropType,
+  sa_105: require('../../assets/dish-haleem.png') as ImageSourcePropType,
   sa_106: require('../../assets/sa_106.jpg') as ImageSourcePropType,
   sa_107: require('../../assets/sa_107.jpg') as ImageSourcePropType,
   sa_108: require('../../assets/sa_108.jpg') as ImageSourcePropType,

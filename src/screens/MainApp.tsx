@@ -834,8 +834,7 @@ function MiniMacro({ label, value, target, color, image }: { label: 'Protein' | 
   const pct = target > 0 ? Math.min(1, value / target) : 0;
   return (
     <NutrientInfoCard nutrient={label.toLowerCase() as Nutrient} style={styles.miniMacro}>
-      <FoodImage source={image} style={styles.macroBackground} />
-      <LinearGradient colors={['rgba(10,24,20,0.02)', 'rgba(10,24,20,0.62)']} style={StyleSheet.absoluteFill} />
+      <LinearGradient colors={[color, '#173B32']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
       <View style={styles.macroContent}>
         <View style={[styles.macroDot, { backgroundColor: color }]} />
         <View style={{ flex: 1 }}>
