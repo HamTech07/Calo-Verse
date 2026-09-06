@@ -16,8 +16,31 @@ export const BUNDLED_FOOD_IMAGES = {
   grains: require('../../assets/food-grains.jpg') as ImageSourcePropType,
 };
 
+// Individual food-card photography. These files are bundled in the APK so the
+// South Asian search results do not fall back to the same generic rice photo.
+const SOUTH_ASIAN_FOOD_IMAGES: Record<string, ImageSourcePropType> = {
+  sa_101: require('../../assets/sa_101.jpg') as ImageSourcePropType,
+  sa_102: BUNDLED_FOOD_IMAGES.daalTadka,
+  sa_103: require('../../assets/sa_103.jpg') as ImageSourcePropType,
+  sa_104: require('../../assets/sa_104.jpg') as ImageSourcePropType,
+  sa_105: require('../../assets/sa_105.jpg') as ImageSourcePropType,
+  sa_106: require('../../assets/sa_106.jpg') as ImageSourcePropType,
+  sa_107: require('../../assets/sa_107.jpg') as ImageSourcePropType,
+  sa_108: require('../../assets/sa_108.jpg') as ImageSourcePropType,
+  sa_109: require('../../assets/sa_109.jpg') as ImageSourcePropType,
+  sa_110: require('../../assets/sa_110.jpg') as ImageSourcePropType,
+  sa_111: require('../../assets/sa_111.jpg') as ImageSourcePropType,
+  sa_112: require('../../assets/sa_112.jpg') as ImageSourcePropType,
+  sa_113: require('../../assets/sa_113.jpg') as ImageSourcePropType,
+  sa_114: require('../../assets/sa_114.jpg') as ImageSourcePropType,
+  sa_115: require('../../assets/sa_115.jpg') as ImageSourcePropType,
+  sa_116: require('../../assets/sa_116.jpg') as ImageSourcePropType,
+  sa_117: require('../../assets/sa_117.jpg') as ImageSourcePropType,
+  sa_118: require('../../assets/sa_118.jpg') as ImageSourcePropType,
+};
+
 function bundledFoodImage(id: string): ImageSourcePropType {
-  if (id === 'sa_102') return BUNDLED_FOOD_IMAGES.daalTadka;
+  if (SOUTH_ASIAN_FOOD_IMAGES[id]) return SOUTH_ASIAN_FOOD_IMAGES[id];
   if (id.includes('fit') || id.includes('brand')) return BUNDLED_FOOD_IMAGES.grill;
   if (id.includes('sa_101') || id.includes('me_') || id.includes('af_')) return BUNDLED_FOOD_IMAGES.biryani;
   if (id.includes('eu_') || id.includes('au_') || id.includes('am_')) return BUNDLED_FOOD_IMAGES.grill;
