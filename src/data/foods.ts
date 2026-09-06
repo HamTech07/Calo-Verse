@@ -24,27 +24,14 @@ const SOUTH_ASIAN_FOOD_IMAGES: Record<string, ImageSourcePropType> = {
   sa_103: require('../../assets/dish-karahi.png') as ImageSourcePropType,
   sa_104: require('../../assets/dish-paratha.png') as ImageSourcePropType,
   sa_105: require('../../assets/dish-haleem.png') as ImageSourcePropType,
-  sa_106: require('../../assets/sa_106.jpg') as ImageSourcePropType,
-  sa_107: require('../../assets/sa_107.jpg') as ImageSourcePropType,
-  sa_108: require('../../assets/sa_108.jpg') as ImageSourcePropType,
-  sa_109: require('../../assets/sa_109.jpg') as ImageSourcePropType,
-  sa_110: require('../../assets/sa_110.jpg') as ImageSourcePropType,
-  sa_111: require('../../assets/sa_111.jpg') as ImageSourcePropType,
-  sa_112: require('../../assets/sa_112.jpg') as ImageSourcePropType,
-  sa_113: require('../../assets/sa_113.jpg') as ImageSourcePropType,
-  sa_114: require('../../assets/sa_114.jpg') as ImageSourcePropType,
-  sa_115: require('../../assets/sa_115.jpg') as ImageSourcePropType,
-  sa_116: require('../../assets/sa_116.jpg') as ImageSourcePropType,
-  sa_117: require('../../assets/sa_117.jpg') as ImageSourcePropType,
-  sa_118: require('../../assets/sa_118.jpg') as ImageSourcePropType,
 };
 
 function bundledFoodImage(id: string): ImageSourcePropType {
   if (SOUTH_ASIAN_FOOD_IMAGES[id]) return SOUTH_ASIAN_FOOD_IMAGES[id];
-  if (id.includes('fit') || id.includes('brand')) return BUNDLED_FOOD_IMAGES.grill;
-  if (id.includes('sa_101') || id.includes('me_') || id.includes('af_')) return BUNDLED_FOOD_IMAGES.biryani;
-  if (id.includes('eu_') || id.includes('au_') || id.includes('am_')) return BUNDLED_FOOD_IMAGES.grill;
-  return id.length % 2 ? BUNDLED_FOOD_IMAGES.salad : BUNDLED_FOOD_IMAGES.grains;
+  // Do not reuse a generic salad or beef image for an unrelated dish.
+  // The database's dedicated source remains assigned for every other food.
+  if (id === 'brand_113') return { uri: FOOD_IMAGES.brand_205 };
+  return FOOD_IMAGES[id] ? { uri: FOOD_IMAGES[id] } : BUNDLED_FOOD_IMAGES.grains;
 }
 
 // Prototype-only remote food photography. Every database item has a distinct,

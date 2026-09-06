@@ -834,7 +834,8 @@ function MiniMacro({ label, value, target, color, image }: { label: 'Protein' | 
   const pct = target > 0 ? Math.min(1, value / target) : 0;
   return (
     <NutrientInfoCard nutrient={label.toLowerCase() as Nutrient} style={styles.miniMacro}>
-      <LinearGradient colors={[color, '#173B32']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <FoodImage source={image} resizeMode="cover" style={styles.miniMacroImage} />
+      <LinearGradient colors={['rgba(8, 30, 24, 0.18)', 'rgba(8, 30, 24, 0.92)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={styles.miniMacroOverlay} />
       <View style={styles.macroContent}>
         <View style={[styles.macroDot, { backgroundColor: color }]} />
         <View style={{ flex: 1 }}>
@@ -2209,6 +2210,8 @@ const styles = StyleSheet.create({
   remainingLabel: { ...typography.label, color: colors.muted, fontSize: 9 },
   macroRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
   miniMacro: { width: '48%', height: 142, borderRadius: 17, overflow: 'hidden', position: 'relative', justifyContent: 'flex-end' },
+  miniMacroImage: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, width: '100%', height: '100%' },
+  miniMacroOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   macroHint: { color: '#FFFFFF', opacity: 0.85, fontSize: 10, marginTop: 4, marginBottom: 4 },
   macroBackground: { ...StyleSheet.absoluteFillObject },
   macroContent: { flexDirection: 'row', alignItems: 'center', gap: 7, padding: 11, position: 'relative', zIndex: 2 },
