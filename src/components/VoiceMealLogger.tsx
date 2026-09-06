@@ -54,7 +54,7 @@ function VoiceRecorder({ tier, voiceChecksUsed, onAddFood, onVoiceUsage }: Props
       const food: Food = { id: 'voice-' + Date.now(), name: estimate.name, region: 'AI meal estimate',
         brand: 'Gemini voice estimate', isBranded: false, portionSize: estimate.portion,
         calories: estimate.calories, protein: estimate.protein, carbs: estimate.carbs, fats: estimate.fats, fiber: estimate.fiber,
-        processingLevel: 'Not assessed', accessTier: 'free', image: '' };
+        processingLevel: 'Not assessed', accessTier: 'free', image: require('../../assets/food-biryani.jpg') };
       onAddFood(food, meal, estimate.englishText + '. ' + estimate.explanation + ' Approximate AI nutrition estimate.');
       setSaved(true); player.pause();
     } catch { added.current = false; setError('The meal could not be added. Please try again.'); }

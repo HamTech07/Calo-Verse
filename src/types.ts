@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from 'react-native';
+
 export type Gender = 'male' | 'female' | 'other';
 export type Goal = 'lose' | 'maintain' | 'gain';
 export type Tier = 'free' | 'plus' | 'pro';
@@ -51,7 +53,7 @@ export interface Food {
   fiber: number;
   processingLevel: 'Minimally Processed' | 'Processed' | 'Ultra-Processed' | 'Not assessed';
   accessTier: Tier;
-  image: string;
+  image: ImageSourcePropType;
   keywords?: string[];
 }
 

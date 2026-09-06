@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type ImageSourcePropType,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -829,7 +830,7 @@ function DashboardTab({
   );
 }
 
-function MiniMacro({ label, value, target, color, image }: { label: 'Protein' | 'Carbs' | 'Fats' | 'Fiber'; value: number; target: number; color: string; image: string }) {
+function MiniMacro({ label, value, target, color, image }: { label: 'Protein' | 'Carbs' | 'Fats' | 'Fiber'; value: number; target: number; color: string; image: ImageSourcePropType }) {
   const pct = target > 0 ? Math.min(1, value / target) : 0;
   return (
     <NutrientInfoCard nutrient={label.toLowerCase() as Nutrient} style={styles.miniMacro}>
@@ -859,7 +860,7 @@ function PhotoMetric({
   label: 'PROTEIN' | 'CARBS' | 'FATS' | 'FIBER';
   value: string | number;
   suffix?: string;
-  image: string;
+  image: ImageSourcePropType;
 }) {
   return (
     <NutrientInfoCard nutrient={label.toLowerCase() as Nutrient} style={styles.photoMetric}>
@@ -887,7 +888,7 @@ function QuickAction({
   icon: IconName;
   title: string;
   detail: string;
-  image: string;
+  image: ImageSourcePropType;
   color: string;
   iconColor: string;
   locked?: boolean;
@@ -929,6 +930,8 @@ function FoodsTab({
   const [region, setRegion] = useState('All');
   const [notice, setNotice] = useState('Browse freely with Unlimited manual search, or Ask Calo AI.');
   const [assistantReply, setAssistantReply] = useState<{ headline: string; detail: string } | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiInputOpen, setAiInputOpen] = useState(false);
   const [aiResultOpen, setAiResultOpen] = useState(false);
   const aiBusy = useRef(false);
   const [askingAi, setAskingAi] = useState(false);
@@ -966,9 +969,9 @@ function FoodsTab({
 
   const askAi = async () => {
     if (aiBusy.current) return;
-    const cleaned = query.trim();
+    const cleaned = aiPrompt.trim();
     if (!cleaned) {
-      setNotice('Enter a food or dish, then press Ask Calo AI.');
+      setNotice('Write a food or dish in the Ask Calo AI page first.');
       return;
     }
     aiBusy.current = true;
@@ -984,6 +987,7 @@ function FoodsTab({
       headline: `About ${estimate.calories} kcal · ${estimate.name}`,
       detail: `Likely range ${estimate.caloriesLow}–${estimate.caloriesHigh} kcal; ${estimate.calories} kcal is the conservative logging value. ${estimate.portion}. Protein ${estimate.protein} g · Carbs ${estimate.carbs} g · Fats ${estimate.fats} g · Fiber ${estimate.fiber} g. ${estimate.explanation}`,
     });
+    setAiInputOpen(false);
     setAiResultOpen(true);
     setNotice(`Live AI estimate · ${estimate.englishText}`);
     } catch (error) {
@@ -1051,7 +1055,7 @@ function FoodsTab({
             {assistantReply?.detail ??
               'Type a food item, such as “Chicken Biryani” or “2 boiled eggs and paratha.” Manual search is unlimited; AI assistance includes 3 free uses.'}
           </Text>
-          <Pressable accessibilityRole="button" disabled={askingAi} accessibilityState={{ busy: askingAi, disabled: askingAi }} onPress={askAi} style={({ pressed }) => [styles.aiAskButton, pressed && styles.pressed]}>
+          <Pressable accessibilityRole="button" disabled={askingAi} accessibilityState={{ busy: askingAi, disabled: askingAi }} onPress={() => { setAiPrompt(query); setAiInputOpen(true); }} style={({ pressed }) => [styles.aiAskButton, pressed && styles.pressed]}>
             <Ionicons name="sparkles" size={17} color={colors.primaryDark} />
             <Text style={styles.aiAskButtonText}>{askingAi ? 'Estimating…' : 'Ask Calo AI'}</Text>
             <Text style={styles.aiAskCount}>{tier === 'free' ? `${Math.max(0, 3 - aiChecksUsed)} free left` : 'Unlimited'}</Text>
@@ -1059,6 +1063,34 @@ function FoodsTab({
           <Text style={styles.aiAssistantDisclaimer}>Live Gemini estimates, not exact measurements. Food descriptions are sent to Google; free-tier inputs may be used to improve its products. Do not include sensitive personal information.</Text>
         </View>
       </ClayCard>
+
+      <Modal transparent visible={aiInputOpen} animationType="fade" onRequestClose={() => setAiInputOpen(false)}>
+        <View style={styles.aiResultOverlay}>
+          <ClayCard style={styles.aiResultModal}>
+            <View style={styles.aiResultHeader}>
+              <View style={styles.aiResultIcon}><Ionicons name="sparkles" size={19} color="#765B15" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.aiResultEyebrow}>ASK CALO AI</Text>
+                <Text style={styles.aiResultTitle}>What did you eat?</Text>
+              </View>
+              <Pressable onPress={() => setAiInputOpen(false)} accessibilityLabel="Close Ask Calo AI" style={styles.aiResultClose}>
+                <Ionicons name="close" size={20} color={colors.primaryDark} />
+              </Pressable>
+            </View>
+            <Text style={styles.aiResultDetail}>Describe the food, amount, and anything extra such as oil, sauce or desi ghee.</Text>
+            <TextInput
+              value={aiPrompt}
+              onChangeText={setAiPrompt}
+              multiline
+              autoFocus
+              placeholder="Example: One full plate chicken biryani with raita"
+              placeholderTextColor="#7C8983"
+              style={styles.aiPromptInput}
+            />
+            <PrimaryButton label={askingAi ? "Estimating…" : "Send to Calo AI"} icon="sparkles" onPress={askAi} />
+          </ClayCard>
+        </View>
+      </Modal>
 
       <Modal transparent visible={aiResultOpen} animationType="fade" onRequestClose={() => setAiResultOpen(false)}>
         <View style={styles.aiResultOverlay}>
@@ -2268,6 +2300,7 @@ const styles = StyleSheet.create({
   aiResultClose: { width: 36, height: 36, borderRadius: 14, backgroundColor: colors.surfaceMint, alignItems: 'center', justifyContent: 'center' },
   aiResultCalories: { ...typography.heading, color: colors.primaryDark, fontSize: 20, lineHeight: 27 },
   aiResultDetail: { ...typography.body, color: colors.muted, fontSize: 13, lineHeight: 20 },
+  aiPromptInput: { minHeight: 110, borderWidth: 1, borderColor: colors.outline, borderRadius: 17, backgroundColor: colors.surfaceSoft, color: colors.ink, fontFamily: fonts.body, fontSize: 14, lineHeight: 20, padding: 14, textAlignVertical: 'top', outlineStyle: 'none' } as any,
   chipRow: { gap: 8, paddingVertical: 2, paddingRight: 18 },
   resultHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
   resultActions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 7 },

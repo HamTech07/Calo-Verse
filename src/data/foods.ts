@@ -1,11 +1,26 @@
 import { Food } from '../types';
+import type { ImageSourcePropType } from 'react-native';
 
 const IMAGES = {
-  fresh:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuAZZgBD_YrG3yp01Lbu9JLg8XbtVfSZuJjmqgt2r6yZh9D7YEJJHVenLiW0Mlg-iR6mPMTQdBXKf9pjTeHcVyNCiX6Wx3gyTaNsIqgnK3SjLEnn6gliKc5rbss4rmNL2fiGI91T5KD9Amm98ZN75GNUTp4vFTWTRJNSPezL_J4nnLOJIXwCiV1f1ay4EUm_2azReFv7_DmoQo57zYT57bvwWzfQE7Do5z9t4eCCgnvq9WnWQusBFv5_EQ',
-  savory:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuAba-aygcKSPDJOoKad28gMj4TULMd6JrGtX77j0tz929ECHtrWYRTi7IHnSCEw6vTw49Wob18IhACS0_xEcaHHeoy3pODi9wjR0rJPuAXrysqoPsirICiUvgwzCJHny_8thWmzac8LPA9RiMytBUpNzc6at3zBT3828qi0Db_lPdqH5uJA9O25gZ23qZd-oJXptVqOjVy1v1BmDsWdo5l9gzcEA4j4U8_nZHGLESycSWk6zrswwJwpNA',
+  fresh: require('../../assets/food-salad.jpg') as ImageSourcePropType,
+  savory: require('../../assets/food-biryani.jpg') as ImageSourcePropType,
 };
+
+// These are packaged in the APK, rather than fetched from the web at runtime.
+// This keeps the Home, Search and macro-card photography visible on every phone.
+export const BUNDLED_FOOD_IMAGES = {
+  biryani: require('../../assets/food-biryani.jpg') as ImageSourcePropType,
+  grill: require('../../assets/food-grill.jpg') as ImageSourcePropType,
+  salad: require('../../assets/food-salad.jpg') as ImageSourcePropType,
+  grains: require('../../assets/food-grains.jpg') as ImageSourcePropType,
+};
+
+function bundledFoodImage(id: string): ImageSourcePropType {
+  if (id.includes('fit') || id.includes('brand')) return BUNDLED_FOOD_IMAGES.grill;
+  if (id.includes('sa_101') || id.includes('me_') || id.includes('af_')) return BUNDLED_FOOD_IMAGES.biryani;
+  if (id.includes('eu_') || id.includes('au_') || id.includes('am_')) return BUNDLED_FOOD_IMAGES.grill;
+  return id.length % 2 ? BUNDLED_FOOD_IMAGES.salad : BUNDLED_FOOD_IMAGES.grains;
+}
 
 // Prototype-only remote food photography. Every database item has a distinct,
 // dish-specific image; production can move these licensed assets to its own CDN.
@@ -86,7 +101,7 @@ function food(
     processingLevel: 'Minimally Processed',
     accessTier: 'free',
     ...options,
-    image: FOOD_IMAGES[id] ?? options.image ?? (id.length % 2 ? IMAGES.fresh : IMAGES.savory),
+    image: options.image ?? bundledFoodImage(id),
   };
 }
 
@@ -273,14 +288,10 @@ export const foods: Food[] = [
 ];
 
 export const MACRO_BACKGROUNDS = {
-  protein:
-    'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80',
-  carbs:
-    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80',
-  fats:
-    'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=600&q=80',
-  fiber:
-    'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80',
+  protein: BUNDLED_FOOD_IMAGES.grill,
+  carbs: BUNDLED_FOOD_IMAGES.grains,
+  fats: BUNDLED_FOOD_IMAGES.biryani,
+  fiber: BUNDLED_FOOD_IMAGES.salad,
 };
 
 export const scanDemoDishes: Food[] = [

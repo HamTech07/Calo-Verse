@@ -133,7 +133,7 @@ export function PhotoMealScanner({ tier, scansUsed, trialStartedAt: _trialStarte
         brand: 'Gemini photo + text estimate', isBranded: false, portionSize: estimate.portion,
         calories: estimate.calories, protein: estimate.protein, carbs: estimate.carbs,
         fats: estimate.fats, fiber: estimate.fiber, processingLevel: 'Not assessed',
-        accessTier: 'free', image: '',
+        accessTier: 'free', image: require('../../assets/food-biryani.jpg'),
       };
       onAddFood(food, meal, estimate.englishText + '. ' + estimate.explanation + ' AI estimate; portion and recipe variations apply.');
       setSaved(true);
