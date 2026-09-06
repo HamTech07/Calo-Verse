@@ -10,12 +10,14 @@ const IMAGES = {
 // This keeps the Home, Search and macro-card photography visible on every phone.
 export const BUNDLED_FOOD_IMAGES = {
   biryani: require('../../assets/food-biryani.jpg') as ImageSourcePropType,
+  daalTadka: require('../../assets/food-daal-tadka.png') as ImageSourcePropType,
   grill: require('../../assets/food-grill.jpg') as ImageSourcePropType,
   salad: require('../../assets/food-salad.jpg') as ImageSourcePropType,
   grains: require('../../assets/food-grains.jpg') as ImageSourcePropType,
 };
 
 function bundledFoodImage(id: string): ImageSourcePropType {
+  if (id === 'sa_102') return BUNDLED_FOOD_IMAGES.daalTadka;
   if (id.includes('fit') || id.includes('brand')) return BUNDLED_FOOD_IMAGES.grill;
   if (id.includes('sa_101') || id.includes('me_') || id.includes('af_')) return BUNDLED_FOOD_IMAGES.biryani;
   if (id.includes('eu_') || id.includes('au_') || id.includes('am_')) return BUNDLED_FOOD_IMAGES.grill;
