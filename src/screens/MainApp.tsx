@@ -1036,13 +1036,6 @@ function FoodsTab({
       </View>
 
       <ClayCard style={styles.aiAssistantCard}>
-        <FoodImage source={foods[0].image} style={styles.aiAssistantImage} />
-        <LinearGradient
-          colors={['rgba(15,45,39,0.35)', 'rgba(13,27,24,0.78)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.aiAssistantShade}
-        />
         <View style={styles.aiAssistantContent}>
           <View style={styles.aiAssistantTop}>
             <View style={styles.aiAssistantIcon}>
@@ -2278,10 +2271,8 @@ const styles = StyleSheet.create({
   notice: { ...typography.body, color: colors.muted, fontSize: 11, flex: 1 },
   searchCount: { ...typography.label, color: '#9A5C37', fontSize: 11 },
   unlimited: { ...typography.label, color: colors.primary, fontSize: 11 },
-  aiAssistantCard: { minHeight: 238, overflow: 'hidden', position: 'relative', justifyContent: 'center' },
-  aiAssistantImage: { ...StyleSheet.absoluteFillObject, zIndex: 0 },
-  aiAssistantShade: { ...StyleSheet.absoluteFillObject, zIndex: 1 },
-  aiAssistantContent: { padding: 21, gap: 8, position: 'relative', zIndex: 2, elevation: 2 },
+  aiAssistantCard: { minHeight: 196, padding: 0, overflow: 'hidden', backgroundColor: '#17483C', borderColor: 'rgba(255,255,255,0.24)' },
+  aiAssistantContent: { padding: 21, gap: 8 },
   aiAssistantTop: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   aiAssistantIcon: { width: 32, height: 32, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
   aiAssistantEyebrow: { ...typography.label, color: '#F5D98A', fontSize: 10, letterSpacing: 1.1 },
