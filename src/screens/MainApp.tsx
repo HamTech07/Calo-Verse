@@ -710,7 +710,7 @@ function DashboardTab({
       <View style={styles.quickRow}>
         <QuickAction
           icon="search"
-          title="Search Food"
+          title="AI Search"
           detail="Unlimited manual database"
           image={foods[0].image}
           color={colors.blueSoft}
@@ -719,7 +719,7 @@ function DashboardTab({
         />
         <QuickAction
           icon="scan"
-          title="AI Photo Scan"
+          title="AI Scan"
           detail={tier === 'pro' ? 'Unlimited scans' : `${Math.max(0, 3 - scansUsed)} free scans left`}
           image={demoScanFood.image}
           color={colors.goldSoft}
@@ -1595,7 +1595,7 @@ function ProfileTab({
 
   return (
     <ScreenScroll>
-      <ScreenTitle eyebrow="YOUR SPACE" title="Profile & targets" subtitle="A clear view of the choices powering your plan." />
+      <ScreenTitle eyebrow="YOUR ACCOUNT" title="Account & settings" subtitle="Manage your profile, calorie plan, and account." />
       <ClayCard tone="mint" style={styles.profileHero}>
         <View style={styles.profileAvatar}>
           <Text style={styles.profileAvatarText}>{profile.name.slice(0, 1).toUpperCase()}</Text>
@@ -1609,6 +1609,17 @@ function ProfileTab({
         </View>
         <View style={styles.profileTier}>
           <Text style={styles.profileTierText}>{tier.toUpperCase()}</Text>
+        </View>
+      </ClayCard>
+
+      <ClayCard style={styles.detailsCard}>
+        <Text style={styles.sectionTitle}>Account settings</Text>
+        <DetailRow icon="person-outline" label="Username" value={profile.name} />
+        <View style={styles.detailDivider} />
+        <DetailRow icon="mail-outline" label="Email" value={profile.email} />
+        <View style={styles.profileActions}>
+          <SecondaryButton label="Reset plan" icon="refresh-outline" onPress={onReset} style={styles.profileAction} />
+          <SecondaryButton label="Sign out" icon="log-out-outline" onPress={onSignOut} style={styles.profileAction} />
         </View>
       </ClayCard>
 
@@ -1671,10 +1682,6 @@ function ProfileTab({
       ) : null}
 
       {tier !== 'pro' ? <PrimaryButton label="Explore upgrades" icon="sparkles" onPress={onUpgrade} /> : null}
-      <View style={styles.profileActions}>
-        <SecondaryButton label="Sign out" icon="log-out-outline" onPress={onSignOut} style={styles.profileAction} />
-        <SecondaryButton label="Reset plan" icon="refresh-outline" onPress={onReset} style={styles.profileAction} />
-      </View>
     </ScreenScroll>
   );
 }
@@ -2188,7 +2195,9 @@ const styles = StyleSheet.create({
   tierBadgeText: { ...typography.label, fontSize: 10, color: colors.primary },
   viewport: { flex: 1 },
   screenScroll: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 22, paddingBottom: 160, gap: 18 },
-  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : 14, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
+  // Android's system navigation may overlap an edge-to-edge app. This inset
+  // keeps the Calo Verse tabs fully above it while retaining iPhone spacing.
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : Platform.OS === 'android' ? 36 : 14, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
   navInner: { width: '100%', maxWidth: 760, alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-around' },
   navItem: { minWidth: 60, alignItems: 'center', gap: 3 },
   navIconWrap: { width: 43, height: 37, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
