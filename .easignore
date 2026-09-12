@@ -1,0 +1,25 @@
+# Keep the EAS upload limited to the application source.
+node_modules/
+.git/
+.expo/
+dist/
+web-build/
+*.apk
+*.aab
+backend/data/
+backend/firebase-admin.json
+**/*firebase-adminsdk*.json
+**/service-account*.json
+.env
+.env.*
+!.env.example
+.env*.local
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.tsbuildinfo
+*.log

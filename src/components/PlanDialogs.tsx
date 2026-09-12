@@ -1,9 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FoodImage, PrimaryButton } from './ui';
-import { MACRO_BACKGROUNDS } from '../data/foods';
+import { PrimaryButton } from './ui';
 import { clayShadow, colors, typography } from '../theme';
 import type { Goal } from '../types';
 
@@ -88,10 +86,9 @@ export function NutrientInfoCard({ nutrient, style, children }: {
         {children}
       </Pressable>
       <CenterDialog visible={open} title={`${guide.title} food guide`} onClose={() => setOpen(false)}>
-        <View style={styles.hero}>
-          <FoodImage source={MACRO_BACKGROUNDS[nutrient]} style={StyleSheet.absoluteFillObject} />
-          <LinearGradient colors={['rgba(10,30,25,0.12)', 'rgba(10,30,25,0.85)']} style={StyleSheet.absoluteFill} />
-          <Text style={styles.heroText}>{guide.intro}</Text>
+        <View style={styles.guideIntro}>
+          <Ionicons name="nutrition-outline" size={20} color={colors.primary} />
+          <Text style={styles.guideIntroText}>{guide.intro}</Text>
         </View>
         <Text style={styles.eyebrow}>FOODS TO EXPLORE</Text>
         {guide.foods.map(([title, detail]) => (
@@ -155,8 +152,8 @@ const styles = StyleSheet.create({
   scroll: { flexShrink: 1 },
   content: { padding: 20, paddingTop: 0, gap: 14 },
   card: { borderRadius: 24, overflow: 'hidden', backgroundColor: colors.surface },
-  hero: { height: 116, borderRadius: 18, overflow: 'hidden', justifyContent: 'flex-end', padding: 16 },
-  heroText: { ...typography.label, color: '#FFFFFF', fontSize: 14, lineHeight: 20 },
+  guideIntro: { borderRadius: 18, backgroundColor: colors.surfaceMint, padding: 16, flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  guideIntroText: { ...typography.label, color: colors.primaryDark, fontSize: 14, lineHeight: 20, flex: 1 },
   eyebrow: { ...typography.label, color: colors.primary, fontSize: 10, letterSpacing: 1.4 },
   foodRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   leaf: { backgroundColor: colors.surfaceMint, width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

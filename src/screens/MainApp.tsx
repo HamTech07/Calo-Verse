@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ClayCard,
   FoodImage,
@@ -91,6 +92,7 @@ function planDateForDay(planStartedAt: string, dayNumber: number) {
 
 
 export function MainApp(props: MainAppProps) {
+  const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabId>('home');
   const [tabTransitioning, setTabTransitioning] = useState(false);
   const contentOpacity = useRef(new Animated.Value(1)).current;
@@ -198,7 +200,7 @@ export function MainApp(props: MainAppProps) {
         ) : null}
       </Animated.View>
 
-      <BottomNav tab={tab} onChange={navigateToTab} tier={props.tier} scansUsed={props.scansUsed} />
+      <BottomNav tab={tab} onChange={navigateToTab} tier={props.tier} scansUsed={props.scansUsed} bottomInset={insets.bottom} />
 
       <UpgradeModal
         visible={upgradeOpen}
@@ -242,9 +244,9 @@ function AppHeader({ profile, tier, onProfile }: { profile: Profile; tier: Tier;
   );
 }
 
-function BottomNav({ tab, onChange, tier, scansUsed }: { tab: TabId; onChange: (tab: TabId) => void; tier: Tier; scansUsed: number }) {
+function BottomNav({ tab, onChange, tier, scansUsed, bottomInset }: { tab: TabId; onChange: (tab: TabId) => void; tier: Tier; scansUsed: number; bottomInset: number }) {
   return (
-    <View style={styles.nav}>
+    <View style={[styles.nav, { paddingBottom: Math.max(bottomInset, Platform.OS === 'web' ? 14 : 8) }]}>
       <View style={styles.navInner}>
         {tabs.map((item) => {
           const selected = tab === item.id;
@@ -2195,9 +2197,7 @@ const styles = StyleSheet.create({
   tierBadgeText: { ...typography.label, fontSize: 10, color: colors.primary },
   viewport: { flex: 1 },
   screenScroll: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 22, paddingBottom: 160, gap: 18 },
-  // Android's system navigation may overlap an edge-to-edge app. This inset
-  // keeps the Calo Verse tabs fully above it while retaining iPhone spacing.
-  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, paddingBottom: Platform.OS === 'ios' ? 28 : Platform.OS === 'android' ? 36 : 14, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
+  nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 10, paddingTop: 8, backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(214,223,217,0.8)', ...softShadow },
   navInner: { width: '100%', maxWidth: 760, alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-around' },
   navItem: { minWidth: 60, alignItems: 'center', gap: 3 },
   navIconWrap: { width: 43, height: 37, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },

@@ -12,6 +12,7 @@ backend/firebase-admin.json
 dist/
 web-build/
 expo-env.d.ts
+*.apk
 
 # Native
 .kotlin/

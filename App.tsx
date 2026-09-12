@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Modal, Platform, Pressable, ScrollView, Style
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LogoMark, PrimaryButton } from './src/components/ui';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { MainApp } from './src/screens/MainApp';
@@ -329,6 +330,7 @@ export default function App() {
         />
       ) : null}
       {session.stage === 'main' && session.profile && targets ? (
+        <SafeAreaProvider>
         <MainApp
           profile={session.profile}
           targets={targets}
@@ -361,6 +363,7 @@ export default function App() {
           onSignOut={() => { void handleSignOut(); }}
           onReset={() => setResetPlanOpen(true)}
         />
+        </SafeAreaProvider>
       ) : null}
       {resetPlanOpen && session.profile && session.stage === 'main' ? (
         <ResetPlanDialog currentGoal={session.profile.goal}
